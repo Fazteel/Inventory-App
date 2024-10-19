@@ -8,7 +8,7 @@ import TransactionManagement from './pages/TransactionManagement'
 import ReportProducts from './pages/ReportsProducts';
 import ReportTransactions from './pages/ReportsTransactions';
 import Settings from './pages/Settings'
-import AuthForm from './pages/AuthForm'
+import Login from './pages/Login'
 
 function App() {
   return (
@@ -25,7 +25,7 @@ function App() {
           </Route>
           <Route path='settings' element={<Settings />} />
         </Route>
-        <Route path='auth' element={<AuthForm />} />
+        <Route path='login' element={<Login />} />
       </Routes>
     </BrowserRouter>
   )

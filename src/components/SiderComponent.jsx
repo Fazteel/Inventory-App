@@ -58,7 +58,7 @@ const SiderComponent = ({ collapsed }) => {
   ];
 
   return (
-    <Sider trigger={null} collapsible collapsed={collapsed}>
+    <Sider trigger={null} collapsible collapsed={collapsed} className='fixed h-full left-0 z-10'>
       <div className="flex items-center justify-center my-3">
         <img src={Logo} alt="logo" className='w-10 hidden md:flex' />
         {!collapsed && (
