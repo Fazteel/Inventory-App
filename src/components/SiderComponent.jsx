@@ -29,6 +29,16 @@ const SiderComponent = ({ collapsed }) => {
       key: '/products',
       icon: <AiFillProduct />,
       label: 'Products',
+      children: [
+        {
+          key: '/products/products',
+          label: 'Data Products',
+        },
+        {
+          key: '/products/suppliers',
+          label: 'Data Suppliers',
+        },
+      ]
     },
     {
       key: '/transactions',
@@ -59,13 +69,13 @@ const SiderComponent = ({ collapsed }) => {
 
   return (
     <Sider trigger={null} collapsible collapsed={collapsed} className='fixed h-full left-0 z-10'>
-      <div className="flex items-center justify-center my-3">
+      <div className="flex items-center justify-center mt-4 mb-2">
         <img src={Logo} alt="logo" className='w-10 hidden md:flex' />
         {!collapsed && (
           <span className='font-bold text-white ml-2 text-lg'>StockHawk</span>
         )}
       </div>
-      <Menu theme='dark' mode='inline' className='flex flex-col h-full gap-1.5 space-y-4' selectedKeys={[location.pathname]} >
+      <Menu theme='dark' mode='inline' className='flex flex-col h-full space-y-4 my-3' selectedKeys={[location.pathname]} >
         {menuItems.map((item) => 
           item.children ? (
             <Menu.SubMenu key={item.key} icon={item.icon} title={item.label}>

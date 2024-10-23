@@ -1,30 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Space, Typography } from 'antd';
 import axios from 'axios';
-import AddUser from './AddUser';
+import AddSupplier from './AddSupplier'; // Changed from AddProduct to AddSupplier
 
-const UsersTable = () => {
-  const [ users, setUsers ] = useState([]);
-  const [ loading, setLoading ] = useState(true);
+const SuppliersTable = () => {
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUsers();
+    fetchSuppliers();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchSuppliers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/users');
-      setUsers(response.data);
+      const response = await axios.get('http://localhost:5000/api/suppliers');
+      setSuppliers(response.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching suppliers:', error);
       setLoading(false);
     }
   };
 
-  const handleUserAdded = () => {
-    fetchUsers(); 
+  const handleSupplierAdded = () => {
+    fetchSuppliers(); // Fetch suppliers again after adding a new one
   };
 
   const columns = [
@@ -34,9 +34,14 @@ const UsersTable = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: 'Name',
-      dataIndex: 'username',
-      key: 'username',
+      title: 'Supplier Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Phone',
+      dataIndex: 'phone',
+      key: 'phone',
     },
     {
       title: 'Email',
@@ -44,9 +49,9 @@ const UsersTable = () => {
       key: 'email',
     },
     {
-      title: 'Role',
-      dataIndex: 'role_name',
-      key: 'role_name',
+      title: 'Address',
+      dataIndex: 'address',
+      key: 'address',
     },
     {
       title: 'Action',
@@ -63,12 +68,12 @@ const UsersTable = () => {
   return (
     <div className='p-3'>
       <div className='pb-3'>
-        <AddUser onUserAdded={handleUserAdded} />
+        <AddSupplier onSupplierAdded={handleSupplierAdded} /> {/* Updated the prop name */}
       </div>
       <Table
         loading={loading}
         columns={columns}
-        dataSource={users}
+        dataSource={suppliers}
         rowKey="id"
         pagination={{ pageSize: 5 }}
       />
@@ -76,4 +81,4 @@ const UsersTable = () => {
   );
 };
 
-export default UsersTable;
+export default SuppliersTable;

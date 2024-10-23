@@ -41,7 +41,7 @@ const ProductStatistics = () => {
 
     return (
         <div>
-            <div className="w-full h-80 bg-white drop-shadow-md rounded-xl dark:bg-gray-800">
+            <div className="w-full h-auto bg-white drop-shadow-md rounded-xl dark:bg-gray-800">
                 <div className="flex justify-between p-4 md:p-6 pb-0 md:pb-0">
                     <div>
                         <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">$12,423</h5>

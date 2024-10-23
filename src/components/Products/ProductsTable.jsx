@@ -1,210 +1,177 @@
-import React from 'react';
-import { Space, Table, Tag } from 'antd';
-
-const columns = [
-  {
-    title: 'No',
-    dataIndex: 'no',
-    key: 'no',
-    render: (text, record, index) => index + 1,
-  },
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    render: (text) => <a>{text}</a>,
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address',
-  },
-  {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag) => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a className='bg-yellow-600 px-2 py-1 rounded-lg text-white'>Edit</a>
-        <a className='bg-red-600 px-2 py-1 rounded-lg text-white'>Delete</a>
-      </Space>
-    ),
-  },
-];
-
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: [ 'nice', 'developer' ],
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: [ 'loser' ],
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sydney No. 1 Lake Park',
-    tags: [ 'cool', 'teacher' ],
-  },
-  {
-    key: '4',
-    name: 'Sara White',
-    age: 28,
-    address: 'New York No. 2 Lake Park',
-    tags: [ 'friendly', 'designer' ],
-  },
-  {
-    key: '5',
-    name: 'Mike Johnson',
-    age: 36,
-    address: 'Tokyo No. 3 Lake Park',
-    tags: [ 'hardworking', 'engineer' ],
-  },
-  {
-    key: '6',
-    name: 'Lucy Brown',
-    age: 30,
-    address: 'Paris No. 4 Lake Park',
-    tags: [ 'charming', 'nurse' ],
-  },
-  {
-    key: '7',
-    name: 'David Miller',
-    age: 45,
-    address: 'London No. 2 Lake Park',
-    tags: [ 'strict', 'manager' ],
-  },
-  {
-    key: '8',
-    name: 'Anna Smith',
-    age: 29,
-    address: 'Berlin No. 5 Lake Park',
-    tags: [ 'creative', 'artist' ],
-  },
-  {
-    key: '9',
-    name: 'Robert Lee',
-    age: 41,
-    address: 'New York No. 6 Lake Park',
-    tags: [ 'smart', 'doctor' ],
-  },
-  {
-    key: '10',
-    name: 'Maria Garcia',
-    age: 38,
-    address: 'Madrid No. 1 Lake Park',
-    tags: [ 'calm', 'chef' ],
-  },
-  {
-    key: '11',
-    name: 'James Wilson',
-    age: 34,
-    address: 'Rome No. 2 Lake Park',
-    tags: [ 'active', 'athlete' ],
-  },
-  {
-    key: '12',
-    name: 'Emily Davis',
-    age: 26,
-    address: 'Sydney No. 3 Lake Park',
-    tags: [ 'energetic', 'student' ],
-  },
-  {
-    key: '13',
-    name: 'Daniel Robinson',
-    age: 33,
-    address: 'Tokyo No. 4 Lake Park',
-    tags: [ 'dedicated', 'researcher' ],
-  },
-  {
-    key: '14',
-    name: 'Sophia Martinez',
-    age: 31,
-    address: 'Paris No. 5 Lake Park',
-    tags: [ 'helpful', 'volunteer' ],
-  },
-  {
-    key: '15',
-    name: 'William Clark',
-    age: 39,
-    address: 'Berlin No. 1 Lake Park',
-    tags: [ 'funny', 'comedian' ],
-  },
-  {
-    key: '16',
-    name: 'Olivia Lewis',
-    age: 27,
-    address: 'Rome No. 3 Lake Park',
-    tags: [ 'thoughtful', 'writer' ],
-  },
-  {
-    key: '17',
-    name: 'Henry Young',
-    age: 46,
-    address: 'London No. 3 Lake Park',
-    tags: [ 'serious', 'lawyer' ],
-  },
-  {
-    key: '18',
-    name: 'Isabella King',
-    age: 25,
-    address: 'New York No. 7 Lake Park',
-    tags: [ 'adventurous', 'traveler' ],
-  },
-  {
-    key: '19',
-    name: 'Jacob Wright',
-    age: 37,
-    address: 'Sydney No. 4 Lake Park',
-    tags: [ 'passionate', 'musician' ],
-  },
-  {
-    key: '20',
-    name: 'Ava Scott',
-    age: 35,
-    address: 'Madrid No. 2 Lake Park',
-    tags: [ 'organized', 'planner' ],
-  },
-];
+import React, { useState, useEffect } from 'react';
+import { Table, Space, Typography, message, Modal } from 'antd'; // Import Modal
+import { ExclamationCircleFilled } from '@ant-design/icons'; // Import ikon
+import axios from 'axios';
+import AddProduct from './AddProduct';
+import EditProduct from './EditProduct';
 
 const ProductsTable = () => {
+  const [ products, setProducts ] = useState([]);
+  const [ suppliers, setSuppliers ] = useState([]);
+  const [ loading, setLoading ] = useState(true);
+  const [ editingProduct, setEditingProduct ] = useState(null);
+  const [ addedBy, setAddedBy ] = useState(null);
+
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    if (userInfo && userInfo.id) {
+      setAddedBy(userInfo.id);
+    }
+    fetchProducts();
+    fetchSuppliers();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/api/products');
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      message.error('Failed to fetch products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSuppliers = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/suppliers');
+      setSuppliers(response.data);
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+      message.error('Failed to fetch suppliers');
+    }
+  };
+
+  const handleProductAdded = () => {
+    fetchProducts();
+  };
+
+  const handleEdit = (record) => {
+    setEditingProduct(record);
+  };
+
+  const handleUpdate = () => {
+    fetchProducts();
+    setEditingProduct(null);
+  };
+
+  const showDeleteConfirm = (id) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this product?',
+      icon: <ExclamationCircleFilled />,
+      content: 'This action cannot be undone.',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        handleDelete(id); // Panggil handleDelete setelah konfirmasi
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      if (!addedBy) {
+        message.error('User not logged in');
+        return;
+      }
+
+      const response = await axios.delete(`http://localhost:5000/api/products/${id}`, { data: { deleted_by: addedBy } });
+
+      if (response.data) {
+        message.success('Product deleted successfully!');
+        fetchProducts();
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      message.error('Failed to delete product');
+    }
+  };
+
+  // Format angka menjadi Rupiah
+  const formatRupiah = (value) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+  };
+
+  const columns = [
+    {
+      title: 'No',
+      key: 'index',
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: 'Product Name',
+      dataIndex: 'name',
+      key: 'name',
+      defaultSortOrder: 'ascend',
+      sorter: (a, b) => a.name - b.name,
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      key: 'price',
+      defaultSortOrder: 'ascend',
+      sorter: (a, b) => a.price - b.price,
+      render: (text) => formatRupiah(text),
+    },
+    {
+      title: 'Quantity',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      defaultSortOrder: 'ascend',
+      sorter: (a, b) => a.quantity - b.quantity,
+    },
+    {
+      title: 'Supplier',
+      dataIndex: 'supplier_name',
+      key: 'supplier_name',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Space size="small">
+          <Typography.Link onClick={() => handleEdit(record)}>Edit</Typography.Link>
+          <Typography.Link onClick={() => showDeleteConfirm(record.id)}>Delete</Typography.Link> {/* Ubah di sini */}
+        </Space>
+      ),
+    },
+  ];
+
+  const onChange = (pagination, filters, sorter, extra) => {
+    console.log('params', pagination, filters, sorter, extra);
+  };
+
   return (
     <div className='p-3'>
-      <Table columns={columns} dataSource={data} pagination={{pageSize: 5}} />
+      <div className='pb-3'>
+        <AddProduct onProductAdded={handleProductAdded} addedBy={addedBy} />
+      </div>
+      <Table
+        loading={loading}
+        columns={columns}
+        dataSource={products}
+        onChange={onChange}
+        rowKey="id"
+        pagination={{ pageSize: 5 }}
+      />
+      {editingProduct && (
+        <EditProduct
+          visible={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+          product={editingProduct}
+          suppliers={suppliers}
+          onUpdate={handleUpdate}
+          addedBy={addedBy}
+        />
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default ProductsTable
+export default ProductsTable;

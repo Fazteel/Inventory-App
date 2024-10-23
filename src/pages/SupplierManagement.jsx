@@ -1,10 +1,8 @@
-// UserManagement.js
-import React from 'react';
+import React from 'react'
 import { Breadcrumb } from 'antd';
-import AddUser from '../components/Users/AddUser';
-import UsersTable from '../components/Users/UsersTable';
+import SuppliersTable from '../components/Supplier/SuppliersTable'
 
-const UserManagement = () => {
+const SuppliersManagement = () => {
   return (
     <div className='p-3 bg-gray-200 h-[89vh]'>
       <div className="flex flex-col px-3">
@@ -16,9 +14,9 @@ const UserManagement = () => {
           ]}
         />
       </div>
-      <UsersTable />
+      <SuppliersTable />
     </div>
-  );
-};
+  )
+}
 
-export default UserManagement;
+export default SuppliersManagement

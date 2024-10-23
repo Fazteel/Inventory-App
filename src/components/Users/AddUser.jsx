@@ -1,18 +1,34 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, Input, Select } from 'antd';
+import { Modal, Button, Form, Input, Select, message } from 'antd';
+import axios from 'axios';
 
 const { Option } = Select;
 
-const UserAction = () => {
-    const [ isModalVisible, setIsModalVisible ] = useState(false);
+const AddUser = ({ onUserAdded }) => {
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [form] = Form.useForm();
 
     const showModal = () => {
         setIsModalVisible(true);
     };
 
-    const handleOk = () => {
-        // Handle form submission logic here
-        setIsModalVisible(false);
+    const handleOk = async (values) => {
+        try {
+            // Kirim data ke backend
+            await axios.post('http://localhost:5000/api/users/add', values);
+            message.success('User added successfully!');
+
+            // Reset form dan tutup modal
+            form.resetFields();
+            setIsModalVisible(false);
+            // Panggil callback untuk memperbarui daftar pengguna
+            if (onUserAdded) {
+                onUserAdded();
+            }
+        } catch (error) {
+            console.error('Error adding user:', error);
+            message.error('Failed to add user.');
+        }
     };
 
     const handleCancel = () => {
@@ -25,56 +41,42 @@ const UserAction = () => {
                 Add User
             </Button>
 
-            <Modal title="Create New Product" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel} footer={null} style={{
-                top: 20,
-            }} >
-                <Form layout="vertical" onFinish={handleOk}>
-                    <Form.Item label="Name" name="name" rules={[ { required: true, message: 'Please input the product name!' } ]} style={{
-                        marginBottom: '8px',
-                    }} >
-                        <Input placeholder="Type product name" />
+            <Modal title="Create New User" open={isModalVisible} onCancel={handleCancel} footer={null}>
+                <Form layout="vertical" form={form} onFinish={handleOk}>
+                    <Form.Item
+                        label="Name"
+                        name="username"
+                        rules={[{ required: true, message: 'Please input the name!' }]}
+                        style={{ marginTop: '20px', marginBottom: '8px' }}
+                    >
+                        <Input placeholder="Name" />
                     </Form.Item>
 
-                    <Form.Item label="Price" name="price" rules={[ { required: true, message: 'Please input the product price!' } ]} style={{
-                        marginBottom: '8px',
-                    }} >
-                        <Input type="number" placeholder="$2999" />
+                    <Form.Item
+                        label="Email"
+                        name="email"
+                        rules={[{ required: true, message: 'Please input the email!' }]}
+                        style={{ marginBottom: '8px' }}
+                    >
+                        <Input type="email" placeholder="Email" />
                     </Form.Item>
 
-                    <Form.Item label="Category" name="category" rules={[ { required: true, message: 'Please select a category!' } ]} style={{
-                        display: 'inline-block',
-                        width: 'calc(50% - 8px)',
-                        marginRight: '10px',
-                        marginBottom: '8px',
-                    }}>
-                        <Select placeholder="Select category">
-                            <Option value="TV">TV/Monitors</Option>
-                            <Option value="PC">PC</Option>
-                            <Option value="GA">Gaming/Console</Option>
-                            <Option value="PH">Phones</Option>
+                    <Form.Item
+                        label="Role"
+                        name="role_id" // Pastikan ini sesuai dengan ID role di database
+                        rules={[{ required: true, message: 'Please select the role!' }]}
+                        style={{ marginBottom: '8px' }}
+                    >
+                        <Select placeholder="Select role">
+                            <Option value={1}>Admin</Option>
+                            <Option value={2}>Manager</Option>
+                            <Option value={3}>Staff</Option>
                         </Select>
-                    </Form.Item>
-
-                    <Form.Item label="Suplier" name="suplier" rules={[ { required: true, message: 'Please select a suplier!' } ]} style={{
-                        display: 'inline-block',
-                        width: 'calc(50% - 8px)',
-                        marginBottom: '8px',
-                    }}>
-                        <Select placeholder="Select suplier">
-                            <Option value="TV">TV/Monitors</Option>
-                            <Option value="PC">PC</Option>
-                            <Option value="GA">Gaming/Console</Option>
-                            <Option value="PH">Phones</Option>
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item label="Product Description" name="description" >
-                        <Input.TextArea rows={4} placeholder="Write product description here" />
                     </Form.Item>
 
                     <Form.Item>
-                        <Button type="primary" htmlType="submit">
-                            Add new product
+                        <Button type="primary" htmlType="submit" className="w-full mt-4">
+                            Add new user
                         </Button>
                     </Form.Item>
                 </Form>
@@ -83,4 +85,4 @@ const UserAction = () => {
     );
 };
 
-export default UserAction;
+export default AddUser;

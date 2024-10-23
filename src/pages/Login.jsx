@@ -1,12 +1,43 @@
 import { useState } from 'react';
-import Logo from '../assets/icons/logo-biru.svg'
-import backgroundImage from '../assets/icons/login.svg'
+import { Button, Checkbox, Form, Input, message } from 'antd';
+import axios from 'axios';
+import Logo from '../assets/icons/logo-biru.svg';
+import backgroundImage from '../assets/icons/login.svg';
 
 const AuthForm = () => {
-  const [ isSignUp, setIsSignUp ] = useState(false);
+  const [ loading, setLoading ] = useState(false);
 
-  const toggleAuthMode = () => {
-    setIsSignUp((prevIsSignUp) => !prevIsSignUp);
+  const handleLogin = async (values) => {
+    setLoading(true);
+    try {
+      console.log('Attempting login with:', values); // Debug log
+
+      const response = await axios.post('http://localhost:5000/api/login', {
+        username: values.username,
+        password: values.password,
+      });
+
+      console.log('Login response:', response.data); // Debug log
+
+      // Simpan token dan data user ke localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userInfo', JSON.stringify({
+        id: response.data.user.id,
+        username: response.data.user.username,
+        // tambahkan data pengguna lainnya sesuai kebutuhan
+      }));
+
+      // Umpan balik sukses dan navigasi
+      message.success('Login berhasil!');
+      window.location.href = '/dashboard';
+    } catch (error) {
+      console.error('Login error:', error.response?.data || error); // Debug log
+
+      const errorMessage = error.response?.data?.msg || 'Login gagal. Silakan coba lagi.';
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -16,46 +47,65 @@ const AuthForm = () => {
           <div className="mb-3 text-center">
             <img src={Logo} alt="Logo" className="mx-auto" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Welcome back!</h1>
-          <p className="text-gray-600 mb-6 text-center text-sm md:text-base">Enter to get unlimited access to data & information.</p>
-          <form>
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                Email <span className='text-red-600'>*</span>
-              </label>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="Enter your mail address" />
-            </div>
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                Password <span className='text-red-600'>*</span>
-              </label>
-              <div className="relative">
-                <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="Enter password" />
-                <i className="fas fa-eye absolute right-3 top-3 text-gray-500"></i>
-              </div>
-            </div>
-            <div className="flex items-center justify-between mb-6">
-              <label className="flex items-center">
-                <input type="checkbox" className="form-checkbox text-blue-600" />
-                <span className="ml-2 text-gray-700 text-xs md:text-sm">Remember me</span>
-              </label>
-              <a className="inline-block align-baseline font-bold text-xs md:text-sm text-blue-600 hover:text-blue-800" href="#">
-                Forgot password?
-              </a>
-            </div>
-            <div className="mb-3">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
-                Log In
-              </button>
-            </div>
-          </form>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">
+            Welcome back!
+          </h1>
+          <p className="text-gray-600 mb-3 text-center text-sm md:text-base">
+            Enter to get unlimited access to data & information.
+          </p>
+
+          <Form
+            name="basic"
+            layout="vertical"
+            initialValues={{ remember: true }}
+            onFinish={handleLogin}
+            autoComplete="off"
+          >
+            <Form.Item
+              label="Username"
+              name="username"
+              rules={[ { required: true, message: 'Please input your username!' } ]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[ { required: true, message: 'Please input your password!' } ]}
+            >
+              <Input.Password />
+            </Form.Item>
+
+            <Form.Item name="remember" valuePropName="checked">
+              <Checkbox>Remember me</Checkbox>
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="w-full"
+                loading={loading}
+              >
+                Login
+              </Button>
+            </Form.Item>
+          </Form>
+
           <div className="text-center">
-            <p className="text-gray-600 text-xs md:text-sm">Don't have an account? <a className="text-blue-600 hover:text-blue-800" href="#">Register here</a></p>
+            <p className="text-gray-600 text-sm">
+              Don't have an account?{' '}
+              <a className="text-blue-600 hover:text-blue-800" href="#">
+                Register here
+              </a>
+            </p>
           </div>
         </div>
-        <div className="md:w-1/2 bg-cover bg-center h-64 md:h-auto" style={{ backgroundImage: `url(${backgroundImage})` }}>
-          {/* Placeholder for the left side image */}
-        </div>
+        <div
+          className="md:w-1/2 bg-cover bg-center h-64 md:h-auto"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+        />
       </div>
     </div>
   );

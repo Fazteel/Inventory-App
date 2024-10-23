@@ -1,24 +1,34 @@
-import React from 'react'
-import DataCard from '../components/Dashboard/DataCard'
-import ProductStatistics from '../components/Dashboard/ProductStatistics'
-import BestProducts from '../components/Dashboard/BestProducts'
-import DataTable from '../components/Dashboard/DataTable'
+import React from 'react';
+import { Row, Col } from 'antd';
+import DataCard from '../components/Dashboard/DataCard'; 
+import BestProducts from '../components/Dashboard/BestProducts';
+import ProductStatistics from '../components/Dashboard/ProductStatistics';
+import HighValues from '../components/Dashboard/HighValues';
 
 const Dashboard = () => {
-  return (
-    <div className='p-3 bg-gray-200'>
-      <DataCard />
-      <div className="flex flex-col md:flex-row gap-4 my-4">
-        <div className="w-full md:w-3/4">
-          <ProductStatistics />
+    return (
+        <div className='p-3 bg-gray-200'>
+            <Row gutter={[16, 16]}>
+                <Col xs={24} md={24} xl={12}>
+                    <DataCard />
+                </Col>
+                <Col xs={24} md={24} xl={6}>
+                    <BestProducts />
+                </Col>
+                <Col xs={24} md={24} xl={6}>
+                    <HighValues />
+                </Col>
+            </Row>
+            <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+                <Col xs={24} md={12}>
+                    <ProductStatistics />
+                </Col>
+                <Col xs={24} md={12}>
+                    <ProductStatistics />
+                </Col>
+            </Row>
         </div>
-        <div className="w-full md:w-1/4 mt-28 md:mt-0">
-          <BestProducts />
-        </div>
-      </div>
-      <DataTable />
-    </div>
-  )
-}
+    );
+};
 
-export default Dashboard
+export default Dashboard;

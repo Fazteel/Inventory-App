@@ -3,7 +3,7 @@ import { Card, List, Typography } from 'antd';
 
 const { Text } = Typography;
 
-const BestProducts = () => {
+const HighValues = () => {
     const products = [
         { name: 'Neil Sims', price: '$320' },
         { name: 'Bonnie Green', price: '$3467' },
@@ -14,7 +14,7 @@ const BestProducts = () => {
     return (
         <Card bordered={false} style={{ width: '100%', height: 'auto' }} >
             <div class="flex items-center justify-center mb-4 pt-2">
-                <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white">Best Products</h5>
+                <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white">Highest Assets</h5>
             </div>
             <List itemLayout="horizontal" dataSource={products} renderItem={(item) => (
                 <List.Item className='p-3'>
@@ -29,4 +29,4 @@ const BestProducts = () => {
     );
 };
 
-export default BestProducts;
+export default HighValues;
