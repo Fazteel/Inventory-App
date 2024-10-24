@@ -1,9 +1,10 @@
 import React from 'react';
 import { Row, Col } from 'antd';
 import DataCard from '../components/Dashboard/DataCard'; 
+import HighValues from '../components/Dashboard/HighValues';
 import BestProducts from '../components/Dashboard/BestProducts';
 import ProductStatistics from '../components/Dashboard/ProductStatistics';
-import HighValues from '../components/Dashboard/HighValues';
+import TransactionStatistics from '../components/Dashboard/TransactionStatistics';
 
 const Dashboard = () => {
     return (
@@ -24,7 +25,7 @@ const Dashboard = () => {
                     <ProductStatistics />
                 </Col>
                 <Col xs={24} md={12}>
-                    <ProductStatistics />
+                    <TransactionStatistics />
                 </Col>
             </Row>
         </div>

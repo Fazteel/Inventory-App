@@ -43,30 +43,15 @@ const AddUser = ({ onUserAdded }) => {
 
             <Modal title="Create New User" open={isModalVisible} onCancel={handleCancel} footer={null}>
                 <Form layout="vertical" form={form} onFinish={handleOk}>
-                    <Form.Item
-                        label="Name"
-                        name="username"
-                        rules={[{ required: true, message: 'Please input the name!' }]}
-                        style={{ marginTop: '20px', marginBottom: '8px' }}
-                    >
+                    <Form.Item label="Name" name="username" rules={[{ required: true, message: 'Please input the name!' }]} style={{ marginTop: '20px', marginBottom: '8px' }} >
                         <Input placeholder="Name" />
                     </Form.Item>
 
-                    <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[{ required: true, message: 'Please input the email!' }]}
-                        style={{ marginBottom: '8px' }}
-                    >
+                    <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please input the email!' }]} style={{ marginBottom: '8px' }} >
                         <Input type="email" placeholder="Email" />
                     </Form.Item>
 
-                    <Form.Item
-                        label="Role"
-                        name="role_id" // Pastikan ini sesuai dengan ID role di database
-                        rules={[{ required: true, message: 'Please select the role!' }]}
-                        style={{ marginBottom: '8px' }}
-                    >
+                    <Form.Item label="Role" name="role_id" rules={[{ required: true, message: 'Please select the role!' }]} style={{ marginBottom: '8px' }} >
                         <Select placeholder="Select role">
                             <Option value={1}>Admin</Option>
                             <Option value={2}>Manager</Option>

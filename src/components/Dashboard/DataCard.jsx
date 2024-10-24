@@ -7,6 +7,7 @@ import axios from 'axios';
 const DataCard = () => {
     const [ totalProducts, setTotalProducts ] = useState(0);
     const [ totalIn, setTotalIn ] = useState(0);
+    const [ totalOut, setTotalOut ] = useState(0);
     const [ totalAssets, setTotalAssets ] = useState(0);
     const [ loading, setLoading ] = useState(true);
 
@@ -18,6 +19,9 @@ const DataCard = () => {
 
                 const productInResponse = await axios.get('http://localhost:5000/api/products/total-in');
                 setTotalIn(productInResponse.data.total_in || 0);
+
+                const productOutResponse = await axios.get('http://localhost:5000/api/transactions/total-out');
+                setTotalOut(productOutResponse.data.total_out || 0);
 
                 const assetsResponse = await axios.get('http://localhost:5000/api/products/total-assets');
                 setTotalAssets(assetsResponse.data.total_assets || 0);
@@ -43,7 +47,7 @@ const DataCard = () => {
     return (
         <Row gutter={[ 16, 16 ]}>
             <Col xs={24} md={24} xl={12}>
-                <Card bordered={false} style={{ height: '160px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
+                <Card bordered={false} style={{ height: '152px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
                     <div className="flex items-center h-full">
                         <div className="flex items-center justify-center bg-orange-400 w-1/4 h-full rounded-lg mr-4">
                             <GrTransaction size={30} color='#940602' />
@@ -56,20 +60,20 @@ const DataCard = () => {
                 </Card>
             </Col>
             <Col xs={24} md={24} xl={12}>
-                <Card bordered={false} style={{ height: '160px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
+                <Card bordered={false} style={{ height: '152px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
                     <div className="flex items-center h-full">
                         <div className="flex items-center justify-center bg-red-400 w-1/4 h-full rounded-lg mr-4">
                             <GrTransaction size={30} color='#940602' />
                         </div>
                         <div className='w-1/2'>
                             <p className='font-semibold text-sm'>Stock Out</p>
-                            <h5 className="text-3xl font-bold tracking-tight text-gray-900">0</h5>
+                            <h5 className="text-3xl font-bold tracking-tight text-gray-900">{totalOut}</h5>
                         </div>
                     </div>
                 </Card>
             </Col>
             <Col xs={24} md={24} xl={12}>
-                <Card bordered={false} style={{ height: '160px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
+                <Card bordered={false} style={{ height: '152px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
                     <div className="flex items-center h-full">
                         <div className="flex items-center justify-center bg-blue-400 w-1/4 h-full rounded-lg mr-4">
                             <AiFillProduct size={30} color='#003070' />
@@ -82,7 +86,7 @@ const DataCard = () => {
                 </Card>
             </Col>
             <Col xs={24} md={24} xl={12}>
-                <Card bordered={false} style={{ height: '160px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
+                <Card bordered={false} style={{ height: '152px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
                     <div className="flex items-center h-full">
                         <div className="flex items-center justify-center bg-green-400 w-1/4 h-full rounded-lg mr-4">
                             <AiFillDollarCircle size={30} color='#03660a' />

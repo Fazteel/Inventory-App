@@ -54,40 +54,21 @@ const AuthForm = () => {
             Enter to get unlimited access to data & information.
           </p>
 
-          <Form
-            name="basic"
-            layout="vertical"
-            initialValues={{ remember: true }}
-            onFinish={handleLogin}
-            autoComplete="off"
-          >
-            <Form.Item
-              label="Username"
-              name="username"
-              rules={[ { required: true, message: 'Please input your username!' } ]}
-            >
+          <Form name="basic" layout="vertical" initialValues={{ remember: true }} onFinish={handleLogin} autoComplete="off" >
+            <Form.Item label="Username" name="username" rules={[ { required: true, message: 'Please input your username!' } ]} className='mb-2'>
               <Input />
             </Form.Item>
 
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[ { required: true, message: 'Please input your password!' } ]}
-            >
+            <Form.Item label="Password" name="password" rules={[ { required: true, message: 'Please input your password!' } ]} className='mb-2'>
               <Input.Password />
             </Form.Item>
 
-            <Form.Item name="remember" valuePropName="checked">
+            <Form.Item name="remember" valuePropName="checked" className='mb-3'>
               <Checkbox>Remember me</Checkbox>
             </Form.Item>
 
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="w-full"
-                loading={loading}
-              >
+              <Button type="primary" htmlType="submit" className="w-full" loading={loading} >
                 Login
               </Button>
             </Form.Item>

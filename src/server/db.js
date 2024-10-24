@@ -26,6 +26,7 @@ const testConnection = async () => {
 testConnection();
 
 module.exports = {
+  pool,
   query: (text, params) => pool.query(text, params),
   connect: () => pool.connect()
 };

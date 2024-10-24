@@ -72,51 +72,27 @@ const AddProduct = ({ onProductAdded, addedBy }) => {
 
     return (
         <div>
-            <Button
-                type="primary"
-                onClick={showModal}
-                disabled={!addedBy} // Disable button jika user belum login
-                title={!addedBy ? 'Please login first' : 'Add new product'}
-            >
+            <Button type="primary" onClick={showModal} disabled={!addedBy} title={!addedBy ? 'Please login first' : 'Add new product'} >
                 Add Product
             </Button>
 
-            <Modal
-                title="Create New Product"
-                open={isModalVisible}
-                onCancel={handleCancel}
-                footer={null}
-                style={{ top: 20 }}
-            >
-                <Form
-                    layout="vertical"
-                    onFinish={handleAdd}
-                    initialValues={{ added_by: addedBy }}
-                >
-                    {/* Form items yang sudah ada */}
-                    <Form.Item label="Name" name="name" rules={[ { required: true, message: 'Please input the product name!' } ]} style={{ marginBottom: '8px' }}>
+            <Modal title="Create New Product" open={isModalVisible} onCancel={handleCancel} footer={null} style={{ top: 20 }} >
+                <Form layout="vertical" onFinish={handleAdd} initialValues={{ added_by: addedBy }} >
+                    <Form.Item label="Name" name="name" rules={[ { required: true, message: 'Please input the product name!' } ]} className='mb-2.5'>
                         <Input/>
                     </Form.Item>
 
-                    <Form.Item label="Price" name="price" rules={[ { required: true, message: 'Please input the product price!' } ]} style={{ marginBottom: '8px' }}>
-                        <Input type="number" />
+                    <Form.Item label="Price" name="price" rules={[ { required: true, message: 'Please input the product price!' } ]} className='mb-2.5'>
+                        <Input prefix='Rp' />
                     </Form.Item>
 
-                    <Form.Item
-                        label="Quantity"
-                        name="quantity"
-                        rules={[ { required: true, message: 'Please input the product quantity!' } ]}
-                        style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px', marginRight: '12px' }}
-                    >
+                    <Form.Item label="Quantity" name="quantity" rules={[ { required: true, message: 'Please input the product quantity!' } ]}
+                        style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px', marginRight: '12px' }} >
                         <Input type="number" min={1} />
                     </Form.Item>
 
-                    <Form.Item
-                        label="Supplier"
-                        name="supplier_id"
-                        rules={[ { required: true, message: 'Please select a supplier!' } ]}
-                        style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px' }}
-                    >
+                    <Form.Item label="Supplier" name="supplier_id" rules={[ { required: true, message: 'Please select a supplier!' } ]}
+                        style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px' }} >
                         <Select>
                             {suppliers.map(supplier => (
                                 <Option key={supplier.id} value={supplier.id}>

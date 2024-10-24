@@ -1,27 +1,43 @@
-import React from 'react';
-import { Card, List, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Card, List, Typography, Spin } from 'antd';
 
 const { Text } = Typography;
 
 const BestProducts = () => {
-    const products = [
-        { name: 'Neil Sims', price: '$320' },
-        { name: 'Bonnie Green', price: '$3467' },
-        { name: 'Michael Gough', price: '$67' },
-        { name: 'Lana Byrd', price: '$367' },
-    ];
+    const [ transactions, setTransactions ] = useState([])
+    const [ loading, setLoading ] = useState(true);
+
+    useEffect(() => {
+        const fetcBestProducts = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/transactions/best-products'); // Ganti dengan endpoint API yang sesuai
+                const data = await response.json();
+                setTransactions(data);
+            } catch (error) {
+                console.error("Error fetching high-value products:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetcBestProducts();
+    }, []);
+
+    if (loading) {
+        return <Spin tip="Loading..." />;
+    }
 
     return (
-        <Card bordered={false} style={{ width: '100%', height: 'auto' }} >
-            <div class="flex items-center justify-center mb-4 pt-2">
-                <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white">Best Products</h5>
+        <Card bordered={false} className='w-full h-80'>
+            <div className="flex items-center justify-center mb-4 pt-2">
+                <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">Best Products</h5>
             </div>
-            <List itemLayout="horizontal" dataSource={products} renderItem={(item) => (
+            <List itemLayout="horizontal" dataSource={transactions} renderItem={(item) => (
                 <List.Item className='p-3'>
                     <List.Item.Meta
-                        title={<Text strong>{item.name}</Text>}
+                        title={<Text strong>{item.product_name}</Text>}
                     />
-                    <div><Text>{item.price}</Text></div>
+                    <div><Text>{item.total_quantity}</Text></div>
                 </List.Item>
             )}
             />

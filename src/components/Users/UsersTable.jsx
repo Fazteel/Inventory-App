@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Space, Typography } from 'antd';
+import { Table, Space, Typography, Button, Tooltip, Modal, message } from 'antd';
+import { EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import AddUser from './AddUser';
 
 const UsersTable = () => {
-  const [ users, setUsers ] = useState([]);
-  const [ loading, setLoading ] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [addedBy, setAddedBy] = useState(null); // Menambahkan addedBy untuk user yang melakukan delete
 
   useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    if (userInfo && userInfo.id) {
+      setAddedBy(userInfo.id);
+    }
     fetchUsers();
   }, []);
 
@@ -16,15 +22,54 @@ const UsersTable = () => {
     try {
       const response = await axios.get('http://localhost:5000/api/users');
       setUsers(response.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching users:', error);
+      message.error('Failed to fetch users');
+    } finally {
       setLoading(false);
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      if (!addedBy) {
+        message.error('User not logged in');
+        return;
+      }
+
+      const response = await axios.delete(`http://localhost:5000/api/users/${id}`, {
+        data: { deleted_by: addedBy }
+      });
+
+      if (response.data) {
+        message.success('User deleted successfully!');
+        fetchUsers();
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      message.error('Failed to delete user');
+    }
+  };
+
+  const showDeleteConfirm = (id) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this user?',
+      icon: <ExclamationCircleFilled />,
+      content: 'This action cannot be undone.',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        handleDelete(id);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  };
+
   const handleUserAdded = () => {
-    fetchUsers(); 
+    fetchUsers();
   };
 
   const columns = [
@@ -37,11 +82,15 @@ const UsersTable = () => {
       title: 'Name',
       dataIndex: 'username',
       key: 'username',
+      defaultSortOrder: 'ascend',
+      sorter: (a, b) => a.username - b.username,
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
+      defaultSortOrder: 'ascend',
+      sorter: (a, b) => a.email - b.email,
     },
     {
       title: 'Role',
@@ -53,8 +102,12 @@ const UsersTable = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="small">
-          <Typography.Link>Edit</Typography.Link>
-          <Typography.Link>Delete</Typography.Link>
+          <Tooltip title="Edit">
+            <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
+          </Tooltip>
         </Space>
       ),
     },
@@ -62,7 +115,8 @@ const UsersTable = () => {
 
   return (
     <div className='p-3'>
-      <div className='pb-3'>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+        <Typography.Title level={4}>Users</Typography.Title>
         <AddUser onUserAdded={handleUserAdded} />
       </div>
       <Table

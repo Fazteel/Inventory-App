@@ -53,6 +53,23 @@ router.get("/products/total-assets", async (req, res) => {
   }
 });
 
+// Endpoint untuk menampilkan produk dengan nilai tertinggi (price * quantity)
+router.get("/products/high-values", async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT p.name, (p.price * p.quantity) AS value
+      FROM products p
+      WHERE p.deleted_at IS NULL
+      ORDER BY value DESC 
+      LIMIT 4
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching high-value products:", err);
+    res.status(500).json({ error: "Error fetching high-value products" });
+  }
+});
+
 // Endpoint untuk menampilkan data Product
 router.get("/products", async (req, res) => {
   try {
@@ -180,7 +197,10 @@ router.delete("/products/:id", async (req, res) => {
 
       // Optional: Check if the update was successful
       if (updateResult.rowCount === 0) {
-        console.warn("No matching inventory_additions found for product_id:", id);
+        console.warn(
+          "No matching inventory_additions found for product_id:",
+          id
+        );
       }
 
       await client.query("COMMIT");

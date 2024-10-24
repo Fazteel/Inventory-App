@@ -69,8 +69,8 @@ exports.login = async (req, res) => {
     // Sign token
     jwt.sign(
       payload,
-      process.env.JWT_SECRET, // Kunci rahasia dari .env
-      { expiresIn: "1h" },
+      process.env.JWT_SECRET,
+      { expiresIn: "5m" },
       (err, token) => {
         if (err) {
           console.error("JWT Error:", err);

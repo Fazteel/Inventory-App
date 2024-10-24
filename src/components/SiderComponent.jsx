@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 // Logo
@@ -10,11 +10,27 @@ import { AiFillProduct } from "react-icons/ai";
 import { TbUsers, TbReport } from 'react-icons/tb';
 
 const { Sider } = Layout;
+const { SubMenu } = Menu;
 
 const SiderComponent = ({ collapsed }) => {
   const location = useLocation();
 
-  const menuItems = [
+  // State to manage the open keys for collapsible sub-menus
+  const [ openKeys, setOpenKeys ] = useState([]);
+
+  // Handle opening and closing of sub-menus
+  const onOpenChange = (keys) => {
+    const latestOpenKey = keys.find(key => openKeys.indexOf(key) === -1);
+
+    // Close all other sub-menus if a new one is opened
+    if (latestOpenKey) {
+      setOpenKeys([ latestOpenKey ]);
+    } else {
+      setOpenKeys([]);
+    }
+  };
+
+  const items = [
     {
       key: '/',
       icon: <LuBox />,
@@ -29,7 +45,7 @@ const SiderComponent = ({ collapsed }) => {
       key: '/products',
       icon: <AiFillProduct />,
       label: 'Products',
-      children: [
+      items: [
         {
           key: '/products/products',
           label: 'Data Products',
@@ -49,7 +65,7 @@ const SiderComponent = ({ collapsed }) => {
       key: 'reports',
       icon: <TbReport />,
       label: 'Reports',
-      children: [
+      items: [
         {
           key: '/reports/products',
           label: 'Report Products',
@@ -75,16 +91,16 @@ const SiderComponent = ({ collapsed }) => {
           <span className='font-bold text-white ml-2 text-lg'>StockHawk</span>
         )}
       </div>
-      <Menu theme='dark' mode='inline' className='flex flex-col h-full space-y-4 my-3' selectedKeys={[location.pathname]} >
-        {menuItems.map((item) => 
-          item.children ? (
-            <Menu.SubMenu key={item.key} icon={item.icon} title={item.label}>
-              {item.children.map((child) => (
+      <Menu theme='dark' mode='inline' className='flex flex-col h-full space-y-4 my-3' selectedKeys={[ location.pathname ]} openKeys={openKeys} onOpenChange={onOpenChange} >
+        {items.map((item) =>
+          item.items ? (
+            <SubMenu key={item.key} icon={item.icon} title={item.label}>
+              {item.items.map((child) => (
                 <Menu.Item key={child.key}>
                   <Link to={child.key}>{child.label}</Link>
                 </Menu.Item>
               ))}
-            </Menu.SubMenu>
+            </SubMenu>
           ) : (
             <Menu.Item key={item.key} icon={item.icon}>
               <Link to={item.key}>{item.label}</Link>

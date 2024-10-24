@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Space, Typography, message, Modal } from 'antd'; // Import Modal
-import { ExclamationCircleFilled } from '@ant-design/icons'; // Import ikon
+import { Table, Space, Typography, message, Modal, Button, Tooltip } from 'antd'; // Import Modal
+import { ExclamationCircleFilled, EditOutlined, DeleteOutlined } from '@ant-design/icons'; // Import ikon
 import axios from 'axios';
 import AddProduct from './AddProduct';
 import EditProduct from './EditProduct';
@@ -66,7 +66,7 @@ const ProductsTable = () => {
       okType: 'danger',
       cancelText: 'No',
       onOk() {
-        handleDelete(id); // Panggil handleDelete setelah konfirmasi
+        handleDelete(id);
       },
       onCancel() {
         console.log('Cancel');
@@ -136,8 +136,12 @@ const ProductsTable = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="small">
-          <Typography.Link onClick={() => handleEdit(record)}>Edit</Typography.Link>
-          <Typography.Link onClick={() => showDeleteConfirm(record.id)}>Delete</Typography.Link> {/* Ubah di sini */}
+          <Tooltip title="Edit">
+            <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
+          </Tooltip>
         </Space>
       ),
     },
@@ -149,11 +153,11 @@ const ProductsTable = () => {
 
   return (
     <div className='p-3'>
-      <div className='pb-3'>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+        <Typography.Title level={4}>Products</Typography.Title>
         <AddProduct onProductAdded={handleProductAdded} addedBy={addedBy} />
       </div>
-      <Table
-        loading={loading}
+      <Table loading={loading}
         columns={columns}
         dataSource={products}
         onChange={onChange}

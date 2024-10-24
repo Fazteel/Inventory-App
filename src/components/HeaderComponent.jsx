@@ -1,6 +1,6 @@
 import React from 'react'
-import { Layout, Button, Avatar, Dropdown, Space } from 'antd';
-import { MenuUnfoldOutlined, MenuFoldOutlined, AntDesignOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { Layout, Button, Avatar, Dropdown } from 'antd';
+import { MenuUnfoldOutlined, MenuFoldOutlined, AntDesignOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { GoBell } from "react-icons/go";
 import ProfileImage from '../assets/images/Foto.jpg';
 import { useNavigate } from 'react-router-dom';
@@ -41,7 +41,7 @@ const HeaderComponent = ({ collapsed, setCollapsed, colorBgContainer }) => {
     {
       key: '3',
       label: 'Logout',
-      icon: <SettingOutlined />,
+      icon: <LogoutOutlined />,
       extra: '⌘S',
       onClick: handleLogout,
       danger: true,
@@ -67,7 +67,7 @@ const HeaderComponent = ({ collapsed, setCollapsed, colorBgContainer }) => {
             <span className='absolute top-0 right-0 -mt-1 -mr-1 flex justify-center items-center bg-blue-600 text-white font-semibold text-[10px] w-5 h-4 rounded-full border-2 border-white'>9</span>
           </button>
           <Dropdown menu={{ items }} placement="bottomRight" trigger={[ 'click' ]} >
-            <Avatar src={ProfileImage} size={30} icon={<AntDesignOutlined />} />
+            <Avatar src={ProfileImage} size={30} icon={<AntDesignOutlined />} className='cursor-pointer'/>
           </Dropdown>
         </div>
       </div>
