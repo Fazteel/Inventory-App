@@ -49,7 +49,7 @@ const DataCard = () => {
             <Col xs={24} md={24} xl={12}>
                 <Card bordered={false} style={{ height: '152px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
                     <div className="flex items-center h-full">
-                        <div className="flex items-center justify-center bg-orange-400 w-1/4 h-full rounded-lg mr-4">
+                        <div className="flex items-center justify-center bg-orange-400 w-1/4 h-full rounded-lg mr-2.5">
                             <GrTransaction size={30} color='#940602' />
                         </div>
                         <div className='w-1/2'>
@@ -62,7 +62,7 @@ const DataCard = () => {
             <Col xs={24} md={24} xl={12}>
                 <Card bordered={false} style={{ height: '152px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
                     <div className="flex items-center h-full">
-                        <div className="flex items-center justify-center bg-red-400 w-1/4 h-full rounded-lg mr-4">
+                        <div className="flex items-center justify-center bg-red-400 w-1/4 h-full rounded-lg mr-2.5">
                             <GrTransaction size={30} color='#940602' />
                         </div>
                         <div className='w-1/2'>
@@ -75,7 +75,7 @@ const DataCard = () => {
             <Col xs={24} md={24} xl={12}>
                 <Card bordered={false} style={{ height: '152px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
                     <div className="flex items-center h-full">
-                        <div className="flex items-center justify-center bg-blue-400 w-1/4 h-full rounded-lg mr-4">
+                        <div className="flex items-center justify-center bg-blue-400 w-1/4 h-full rounded-lg mr-2.5">
                             <AiFillProduct size={30} color='#003070' />
                         </div>
                         <div className='w-1/2'>
@@ -88,7 +88,7 @@ const DataCard = () => {
             <Col xs={24} md={24} xl={12}>
                 <Card bordered={false} style={{ height: '152px' }} styles={{ body: { padding: '18px', height: '100%' } }} className='drop-shadow-md'>
                     <div className="flex items-center h-full">
-                        <div className="flex items-center justify-center bg-green-400 w-1/4 h-full rounded-lg mr-4">
+                        <div className="flex items-center justify-center bg-green-400 w-1/4 h-full rounded-lg mr-2.5">
                             <AiFillDollarCircle size={30} color='#03660a' />
                         </div>
                         <div className='w-1/2'>

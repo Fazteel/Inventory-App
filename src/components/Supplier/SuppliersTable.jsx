@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Space, Typography, message, Modal, Button, Tooltip } from 'antd';
-import { ExclamationCircleFilled, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ExclamationCircleFilled, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import AddSupplier from './AddSupplier';
 import EditSupplier from './EditSupplier';
+import SupplierDetails from './SupplierDetails';
 
 const SuppliersTable = () => {
   const [ suppliers, setSuppliers ] = useState([]);
   const [ loading, setLoading ] = useState(true);
   const [ editingSupplier, setEditingSupplier ] = useState(null);
+  const [ detailsVisible, setDetailsVisible ] = useState(false);
+  const [ selectedSupplier, setSelectedSupplier ] = useState(null);
   const [ addedBy, setAddedBy ] = useState(null);
 
   useEffect(() => {
@@ -81,6 +84,11 @@ const SuppliersTable = () => {
     }
   };
 
+  const showSupplierDetails = (record) => {
+    setSelectedSupplier(record);
+    setDetailsVisible(true);
+  };
+
   const columns = [
     {
       title: 'No',
@@ -91,21 +99,18 @@ const SuppliersTable = () => {
       title: 'Supplier Name',
       dataIndex: 'name',
       key: 'name',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.name - b.name,
     },
     {
       title: 'Phone',
       dataIndex: 'phone',
       key: 'phone',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.phone - b.phone,
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.email - b.email,
     },
     {
@@ -118,8 +123,11 @@ const SuppliersTable = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="small">
+          <Tooltip title="View Details">
+            <Button icon={<EyeOutlined />} onClick={() => showSupplierDetails(record)} />
+          </Tooltip>
           <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+            <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           </Tooltip>
           <Tooltip title="Delete">
             <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
@@ -156,6 +164,11 @@ const SuppliersTable = () => {
           addedBy={addedBy}
         />
       )}
+      <SupplierDetails
+        visible={detailsVisible}
+        onClose={() => setDetailsVisible(false)}
+        supplier={selectedSupplier}
+      />
     </div>
   );
 };

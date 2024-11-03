@@ -5,7 +5,7 @@ import axios from 'axios';
 const { Option } = Select;
 
 const EditProduct = ({ visible, onClose, product, suppliers, onUpdate, addedBy }) => {
-    const [form] = Form.useForm();
+    const [ form ] = Form.useForm();
 
     const handleUpdate = async () => {
         try {
@@ -47,19 +47,21 @@ const EditProduct = ({ visible, onClose, product, suppliers, onUpdate, addedBy }
     return (
         <Modal title="Edit Product" open={visible} onOk={handleUpdate} onCancel={onClose} style={{ top: 20 }} >
             <Form form={form} layout="vertical" initialValues={product}>
-                <Form.Item name="name" label="Product Name" rules={[{ required: true }]} className='mb-2.5'>
+                <Form.Item label="Name" name="name" rules={[ { required: true, message: 'Please input the product name!' } ]} className='mb-2.5'>
                     <Input />
                 </Form.Item>
 
-                <Form.Item name="price" label="Price" rules={[{ required: true }]} className='mb-2.5'>
-                    <InputNumber prefix='Rp' style={{ width: '100%' }} />
+                <Form.Item label="Price" name="price" rules={[ { required: true, message: 'Please input the product price!' } ]} className='mb-2.5'>
+                    <Input prefix='Rp' />
                 </Form.Item>
 
-                <Form.Item name="quantity" label="Quantity" rules={[{ required: true }]} className='mb-2.5'>
-                    <InputNumber style={{ width: '100%' }} />
+                <Form.Item label="Quantity" name="quantity" rules={[ { required: true, message: 'Please input the product quantity!' } ]}
+                    style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px', marginRight: '12px' }} >
+                    <Input type="number" min={1} />
                 </Form.Item>
 
-                <Form.Item name="supplier_id" label="Supplier" rules={[{ required: true, message: 'Please select a supplier!' }]} >
+                <Form.Item label="Supplier" name="supplier_id" rules={[ { required: true, message: 'Please select a supplier!' } ]}
+                    style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px' }} >
                     <Select>
                         {suppliers.map(supplier => (
                             <Option key={supplier.id} value={supplier.id}>
@@ -68,6 +70,11 @@ const EditProduct = ({ visible, onClose, product, suppliers, onUpdate, addedBy }
                         ))}
                     </Select>
                 </Form.Item>
+
+                <Form.Item label="Product Description" name="description">
+                    <Input.TextArea rows={4} />
+                </Form.Item>
+
             </Form>
         </Modal>
     );

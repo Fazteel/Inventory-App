@@ -32,32 +32,6 @@ const TransactionsTable = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/transactions/${id}`); // Memperbaiki URL
-      fetchTransactions();
-    } catch (error) {
-      console.error('Error deleting transaction:', error);
-    }
-  };
-
-  const showDeleteConfirm = (id) => {
-    Modal.confirm({
-      title: 'Are you sure you want to delete this transaction?',
-      icon: <ExclamationCircleFilled />,
-      content: 'This action cannot be undone.',
-      okText: 'Yes',
-      okType: 'danger',
-      cancelText: 'No',
-      onOk() {
-        handleDelete(id);
-      },
-      onCancel() {
-        console.log('Cancel');
-      },
-    });
-  };
-
   const showTransactionDetails = (record) => {
     setSelectedTransaction(record);
     setDetailsVisible(true);
@@ -75,17 +49,20 @@ const TransactionsTable = () => {
       render: (_, __, index) => index + 1,
     },
     {
+      title: 'Transaction ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
       title: 'Total Amount',
       dataIndex: 'total_amount',
       key: 'total_amount',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.total_amount - b.total_amount,
       render: (amount) => formatRupiah(amount),
     },
     {
       title: 'Items Count',
       key: 'items_count',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.items_count - b.items_count,
       render: (record) => record.items?.length || 0,
     },
@@ -108,10 +85,7 @@ const TransactionsTable = () => {
       render: (_, record) => (
         <Space size="small">
           <Tooltip title="View Details">
-            <Button icon={<EyeOutlined />} onClick={() => showTransactionDetails(record)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
+            <Button color='default' variant='solid' icon={<EyeOutlined />} onClick={() => showTransactionDetails(record)} />
           </Tooltip>
         </Space>
       ),

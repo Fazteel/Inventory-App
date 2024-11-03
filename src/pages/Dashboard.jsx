@@ -13,11 +13,11 @@ const Dashboard = () => {
                 <Col xs={24} md={24} xl={12}>
                     <DataCard />
                 </Col>
-                <Col xs={24} md={24} xl={6}>
-                    <BestProducts />
-                </Col>
-                <Col xs={24} md={24} xl={6}>
+                <Col xs={24} md={15} xl={7}>
                     <HighValues />
+                </Col>
+                <Col xs={24} md={9} xl={5}>
+                    <BestProducts />
                 </Col>
             </Row>
             <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>

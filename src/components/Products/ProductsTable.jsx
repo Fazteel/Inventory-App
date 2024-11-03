@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Space, Typography, message, Modal, Button, Tooltip } from 'antd'; // Import Modal
-import { ExclamationCircleFilled, EditOutlined, DeleteOutlined } from '@ant-design/icons'; // Import ikon
+import { ExclamationCircleFilled, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'; // Import ikon
 import axios from 'axios';
 import AddProduct from './AddProduct';
 import EditProduct from './EditProduct';
+import ProductDetails from './ProductDetails'
 
 const ProductsTable = () => {
   const [ products, setProducts ] = useState([]);
   const [ suppliers, setSuppliers ] = useState([]);
   const [ loading, setLoading ] = useState(true);
   const [ editingProduct, setEditingProduct ] = useState(null);
+  const [ detailsVisible, setDetailsVisible ] = useState(false);
+  const [ selectedProduct, setSelectedProduct ] = useState(null);
   const [ addedBy, setAddedBy ] = useState(null);
 
   useEffect(() => {
@@ -93,6 +96,11 @@ const ProductsTable = () => {
     }
   };
 
+  const showProductDetails = (record) => {
+    setSelectedProduct(record);
+    setDetailsVisible(true);
+  };
+
   // Format angka menjadi Rupiah
   const formatRupiah = (value) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
@@ -108,14 +116,12 @@ const ProductsTable = () => {
       title: 'Product Name',
       dataIndex: 'name',
       key: 'name',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.name - b.name,
     },
     {
       title: 'Price',
       dataIndex: 'price',
       key: 'price',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.price - b.price,
       render: (text) => formatRupiah(text),
     },
@@ -123,7 +129,6 @@ const ProductsTable = () => {
       title: 'Quantity',
       dataIndex: 'quantity',
       key: 'quantity',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.quantity - b.quantity,
     },
     {
@@ -136,8 +141,11 @@ const ProductsTable = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="small">
+          <Tooltip title="View Details">
+            <Button icon={<EyeOutlined />} onClick={() => showProductDetails(record)} />
+          </Tooltip>
           <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+            <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           </Tooltip>
           <Tooltip title="Delete">
             <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
@@ -174,6 +182,11 @@ const ProductsTable = () => {
           addedBy={addedBy}
         />
       )}
+      <ProductDetails
+        visible={detailsVisible}
+        onClose={() => setDetailsVisible(false)}
+        product={selectedProduct}
+      />
     </div>
   );
 };

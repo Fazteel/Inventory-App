@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Space, Typography, Button, Tooltip, Modal, message } from 'antd';
-import { EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { EyeOutlined, EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import AddUser from './AddUser';
+import AddRole from './AddRole';
 
 const UsersTable = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [addedBy, setAddedBy] = useState(null); // Menambahkan addedBy untuk user yang melakukan delete
+  const [ users, setUsers ] = useState([]);
+  const [ loading, setLoading ] = useState(true);
+  const [ addedBy, setAddedBy ] = useState(null);
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -82,14 +83,12 @@ const UsersTable = () => {
       title: 'Name',
       dataIndex: 'username',
       key: 'username',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.username - b.username,
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      defaultSortOrder: 'ascend',
       sorter: (a, b) => a.email - b.email,
     },
     {
@@ -103,7 +102,7 @@ const UsersTable = () => {
       render: (_, record) => (
         <Space size="small">
           <Tooltip title="Edit">
-            <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+            <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           </Tooltip>
           <Tooltip title="Delete">
             <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
@@ -117,7 +116,10 @@ const UsersTable = () => {
     <div className='p-3'>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={4}>Users</Typography.Title>
-        <AddUser onUserAdded={handleUserAdded} />
+        <div className='flex gap-2'>
+          <AddUser onUserAdded={handleUserAdded} />
+          <AddRole/>
+        </div>
       </div>
       <Table
         loading={loading}

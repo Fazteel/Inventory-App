@@ -24,4 +24,15 @@ const auth = (roles = []) => {
   };
 };
 
-module.exports = auth;
+const authorize = (requiredRoles) => {
+  return (req, res, next) => {
+    const { role } = req.user; 
+    
+    if (!requiredRoles.includes(role)) {
+      return res.status(403).json({ message: "Forbidden: Insufficient Permissions" });
+    }
+    next();
+  };
+};
+
+module.exports = {auth, authorize};

@@ -24,25 +24,30 @@ const HighValues = () => {
     }, []);
 
     // Format angka menjadi Rupiah
-    const formatRupiah = (value) => {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat({ style: 'currency', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
     };
 
     if (loading) {
-        return <Spin tip="Loading..." />; 
+        return <Spin tip="Loading..." />;
     }
 
     return (
         <Card bordered={false} className='w-full h-80'>
             <div className="flex items-center justify-center mb-4 pt-2">
-                <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">Highest Values</h5>
+                <h5 className="text-xl font-semibold leading-none text-gray-900 dark:text-white">Highest Values</h5>
             </div>
             <List itemLayout="horizontal" dataSource={products} renderItem={(item) => (
                 <List.Item className='p-3'>
                     <List.Item.Meta
-                        title={<Text strong>{item.name}</Text>}
+                        title={<Text strong>{item.product_name}</Text>}
                     />
-                    <div><Text>{formatRupiah(item.value)}</Text></div>
+                    <div className="flex justify-between items-center w-20">
+                        <span className="text-gray-900">Rp.</span>
+                        <span className="font-bold text-gray-900">
+                            {formatCurrency(item.total_sales)}
+                        </span>
+                    </div>
                 </List.Item>
             )}
             />

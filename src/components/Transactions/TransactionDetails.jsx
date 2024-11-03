@@ -13,6 +13,10 @@ const TransactionDetails = ({ visible, onClose, transaction }) => {
       dataIndex: 'product_id',
     },
     {
+      title: 'Product Name',
+      dataIndex: 'product_name',
+    },
+    {
       title: 'Quantity',
       dataIndex: 'quantity',
     },
@@ -28,7 +32,7 @@ const TransactionDetails = ({ visible, onClose, transaction }) => {
   ]
 
   return (
-    <Modal title={'Transaction Details'} open={visible} onCancel={onClose} footer={null} width={600} >
+    <Modal title={'Transaction Details'} open={visible} onCancel={onClose} footer={null} width={600} style={{top:20}}>
       {transaction && (
         <div>
           <p><strong>Date:</strong> {new Date(transaction.transaction_date).toLocaleString()}</p>
