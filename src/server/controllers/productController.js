@@ -73,6 +73,16 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+exports.getProductStats = async (req, res) => {
+  try {
+    const result = await query('SELECT DATE(created_at) as date, COUNT(*) as total FROM products GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 7');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error in getProductStats:', error);
+    res.status(500).json({ error: error.message, stack: error.stack });
+  }
+}
+
 exports.addProduct = async (req, res) => {
   const { name, description, price, quantity, supplier_id, added_by } =
     req.body;

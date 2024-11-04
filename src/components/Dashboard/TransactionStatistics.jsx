@@ -1,61 +1,163 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ApexCharts from 'apexcharts';
+import axios from 'axios';
 
 const TransactionStatistics = () => {
-    const options = {
-        chart: {
-            type: 'line',
-            height: 330,
-            background: 'transparent'
-        },
-        series: [{
-            name: 'Sales',
-            data: [12000, 14000, 11000, 13000, 15000, 12000, 12500]
-        }],
-        xaxis: {
-            categories: ['01 Feb', '02 Feb', '03 Feb', '04 Feb', '05 Feb', '06 Feb', '07 Feb'],
-            labels: {
-                style: {
-                    fontFamily: 'Inter, sans-serif',
-                    cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-                }
-            }
-        },
-        yaxis: {
-            labels: {
-                formatter: (value) => '$' + value
-            }
-        },
-    };
-
+    const [chartData, setChartData] = useState({
+        categories: [],
+        series: []
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const chartRef = useRef(null);
+    const chartInstance = useRef(null);
 
     useEffect(() => {
-        if (chartRef.current && typeof ApexCharts !== 'undefined') {
-            const chart = new ApexCharts(chartRef.current, options);
-            chart.render();
+        fetchData();
+    }, []);
 
-            return () => chart.destroy();
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('http://localhost:5000/api/transactions-stats', {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = response.data;
+
+            if (!Array.isArray(data)) {
+                console.error('Invalid data format:', data);
+                setError('Invalid data format received from server');
+                return;
+            }
+
+            // Sort data by date
+            const sortedData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const categories = sortedData.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+            });
+
+            const series = [{
+                name: 'Sales',
+                data: sortedData.map(item => parseFloat(item.total_sales))
+            }];
+
+            setChartData({ categories, series });
+            setError(null);
+        } catch (error) {
+            console.error('Error details:', error.response || error);
+            setError(`Failed to load data: ${error.message}`);
+        } finally {
+            setLoading(false);
         }
-    }, [options]);
+    };
+
+    useEffect(() => {
+        if (chartRef.current && chartData.categories.length > 0) {
+            if (chartInstance.current) {
+                chartInstance.current.destroy();
+            }
+
+            const options = {
+                chart: {
+                    type: 'line',
+                    height: 330,
+                    background: 'transparent',
+                    toolbar: {
+                        show: false
+                    }
+                },
+                series: chartData.series,
+                xaxis: {
+                    categories: chartData.categories,
+                    labels: {
+                        style: {
+                            fontFamily: 'Inter, sans-serif',
+                            colors: '#6B7280'
+                        },
+                        rotate: 0
+                    },
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        formatter: (value) => 'Rp ' + value.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+                        style: {
+                            colors: '#6B7280'
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#E5E7EB',
+                    strokeDashArray: 4
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                colors: ['#3B82F6'],
+                tooltip: {
+                    theme: 'dark',
+                    x: {
+                        show: true
+                    },
+                    y: {
+                        formatter: (value) => 'Rp ' + value.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+                    }
+                }
+            };
+
+            chartInstance.current = new ApexCharts(chartRef.current, options);
+            chartInstance.current.render();
+        }
+
+        return () => {
+            if (chartInstance.current) {
+                chartInstance.current.destroy();
+            }
+        };
+    }, [chartData]);
+
+    if (loading) {
+        return (
+            <div className="w-full h-[400px] bg-white rounded-xl dark:bg-gray-800 flex items-center justify-center">
+                <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="w-full h-[400px] bg-white rounded-xl dark:bg-gray-800 flex items-center justify-center">
+                <div className="text-red-500">{error}</div>
+            </div>
+        );
+    }
+
+    const latestTotal = chartData.series[0]?.data[chartData.series[0]?.data.length - 1] || 0;
 
     return (
-        <div>
-            <div className="w-full h-auto bg-white drop-shadow-md rounded-xl dark:bg-gray-800">
-                <div className="flex justify-between p-4 md:p-6 pb-0 md:pb-0">
-                    <div>
-                        <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">$12,423</h5>
-                        <p className="text-base font-normal text-gray-500 dark:text-gray-400">Sales this week</p>
-                    </div>
-                    <div className="flex items-center px-2.5 py-0.5 text-base font-semibold text-green-500 dark:text-green-500 text-center">
-                        23%
-                        <svg className="w-3 h-3 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 14">
-                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13V1m0 0L1 5m4-4 4 4" />
-                        </svg>
-                    </div>
+        < div className="w-full h-auto bg-white shadow-md rounded-xl dark:bg-gray-800">
+            <div className="flex justify-between p-4 md:p-6 pb-0 md:pb-0">
+                <div>
+                    <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">
+                        Rp {latestTotal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </h5>
+                    <p className="text-base font-normal text-gray-500 dark:text-gray-400">
+                        Sales this week
+                    </p>
                 </div>
-                <div ref={chartRef} id="labels-chart" className="px-3 bg-white rounded-xl"></div>
             </div>
+            <div ref={chartRef} className="px-3 py-2 bg-white rounded-xl dark:bg-gray-800" />
         </div>
     );
 };

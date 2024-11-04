@@ -40,11 +40,11 @@ const HighValues = () => {
             <List itemLayout="horizontal" dataSource={products} renderItem={(item) => (
                 <List.Item className='p-3'>
                     <List.Item.Meta
-                        title={<Text strong>{item.product_name}</Text>}
+                        title={<Text className='font-semibold text-gray-800'>{item.product_name}</Text>}
                     />
-                    <div className="flex justify-between items-center w-20">
+                    <div className="flex justify-between items-center font-bold w-20">
                         <span className="text-gray-900">Rp.</span>
-                        <span className="font-bold text-gray-900">
+                        <span className="text-gray-900">
                             {formatCurrency(item.total_sales)}
                         </span>
                     </div>

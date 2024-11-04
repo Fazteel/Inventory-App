@@ -21,6 +21,22 @@ async function getBestProducts() {
   return result.rows;
 }
 
+async function getTransStats() {
+  const result = await pool.query(`
+    SELECT 
+        DATE(t.transaction_date) as date,
+        SUM(t.total_amount) as total_sales
+      FROM 
+        transactions t
+      GROUP BY 
+        DATE(t.transaction_date)
+      ORDER BY 
+        date DESC
+      LIMIT 7
+  `);
+  return result;
+}
+
 // Mendapatkan semua transaksi
 async function getAllTransactions() {
   const result = await pool.query(`
@@ -67,13 +83,22 @@ async function createTransaction(client, userId, totalAmount) {
 // Memproses item transaksi
 async function processTransactionItems(client, transactionId, items) {
   for (const item of items) {
+    console.log('Processing item:', item);
+    
     // Cek stok
     const stockResult = await client.query(
-      "SELECT quantity FROM products WHERE id = $1 FOR UPDATE",
-      [item.product_id]
+      "SELECT id, quantity FROM products WHERE id = $1 FOR UPDATE",
+      [item.product_id]  
     );
-    if (!stockResult.rows[0] || stockResult.rows[0].quantity < item.quantity) {
-      throw new Error(`Insufficient stock for product ${item.product_id}`);
+
+    if (!stockResult.rows[0]) {
+      throw new Error(`Product not found with ID: ${item.product_id}`);
+    }
+
+    const product = stockResult.rows[0];
+    
+    if (product.quantity < item.quantity) {
+      throw new Error(`Insufficient stock for product ${item.product_name}`);
     }
 
     // Tambahkan item transaksi
@@ -97,4 +122,5 @@ module.exports = {
   getAllTransactions,
   createTransaction,
   processTransactionItems,
+  getTransStats,
 };

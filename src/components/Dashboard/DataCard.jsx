@@ -40,6 +40,15 @@ const DataCard = () => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
     };
 
+    const getTextSize = (value) => {
+        const formattedValue = formatRupiah(value);
+        const length = formattedValue.length;
+
+        if (length > 15) return 'text-lg';
+        if (length > 12) return 'text-xl';
+        return 'text-2xl';
+    };
+
     if (loading) {
         return <Spin size="large" />;
     }
@@ -93,7 +102,7 @@ const DataCard = () => {
                         </div>
                         <div className='w-1/2'>
                             <p className='font-semibold text-sm'>Total Assets</p>
-                            <h5 className="text-2xl font-bold tracking-tight text-gray-900">{formatRupiah(totalAssets)}</h5>
+                            <h5 className={`${getTextSize(totalAssets)} font-bold tracking-tight text-gray-900`}>{formatRupiah(totalAssets)}</h5>
                         </div>
                     </div>
                 </Card>

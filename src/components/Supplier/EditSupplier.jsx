@@ -3,7 +3,7 @@ import { Modal, Form, Input, message } from 'antd';
 import axios from 'axios';
 
 const EditSupplier = ({ visible, onClose, supplier, onUpdate, addedBy }) => {
-  const [form] = Form.useForm();
+  const [ form ] = Form.useForm();
 
   const handleUpdate = async () => {
     try {
@@ -40,16 +40,23 @@ const EditSupplier = ({ visible, onClose, supplier, onUpdate, addedBy }) => {
   return (
     <Modal title="Edit Supplier" open={visible} onOk={handleUpdate} onCancel={onClose} style={{ top: 20 }} >
       <Form form={form} layout="vertical" initialValues={supplier}>
-        <Form.Item name="name" label="Supplier Name" rules={[{ required: true }]}>
+        <Form.Item label="Name" name="name" rules={[ { required: true, message: 'Please input the supplier name!' } ]} style={{ marginBottom: '8px' }}>
           <Input />
         </Form.Item>
-        <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+
+        <Form.Item label="Contact Person" name="contact_person" rules={[ { required: true, message: 'Please input the contact person!' } ]} style={{ marginBottom: '8px' }}>
           <Input />
         </Form.Item>
-        <Form.Item name="email" label="Email" rules={[{ required: true }]}>
+
+        <Form.Item label="Phone" name="phone" rules={[ { required: true, message: 'Please input the phone number!' } ]} style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px', marginRight: '12px' }}>
           <Input />
         </Form.Item>
-        <Form.Item name="address" label="Address" rules={[{ required: true }]}>
+
+        <Form.Item label="Email" name="email" rules={[ { required: true, message: 'Please input the email!' } ]} style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px' }}>
+          <Input />
+        </Form.Item>
+
+        <Form.Item label="Address" name="address" rules={[ { required: true, message: 'Please input the address!' } ]} style={{ marginBottom: '8px' }}>
           <Input />
         </Form.Item>
       </Form>

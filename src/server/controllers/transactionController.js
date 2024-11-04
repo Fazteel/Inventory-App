@@ -4,6 +4,7 @@ const {
   getAllTransactions,
   createTransaction,
   processTransactionItems,
+  getTransStats,
 } = require("../models/transactionModel");
 const { pool } = require("../db");
 
@@ -37,6 +38,20 @@ exports.getTransactions = async (req, res) => {
   }
 };
 
+exports.getTransactionsStats = async (req, res) => {
+  try {
+    const result = await getTransStats()
+    if (result.rows && result.rows.length > 0) {
+      res.json(result.rows);
+    } else {
+      res.json([]); 
+    }
+  } catch (error) {
+    console.error('Error in getTransactionsStats:', error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 exports.createTransaction = async (req, res) => {
   const client = await pool.connect();
   try {
@@ -47,12 +62,23 @@ exports.createTransaction = async (req, res) => {
       throw new Error("Invalid items data");
     }
 
+    // Validasi data items
+    items.forEach((item) => {
+      if (!item.product_id || !item.quantity || !item.price) {
+        throw new Error("Invalid item data: missing required fields");
+      }
+    });
+
     const totalAmount = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
 
-    const transactionId = await createTransaction(client, added_by, totalAmount);
+    const transactionId = await createTransaction(
+      client,
+      added_by,
+      totalAmount
+    );
     await processTransactionItems(client, transactionId, items);
 
     await client.query("COMMIT");
@@ -63,7 +89,7 @@ exports.createTransaction = async (req, res) => {
   } catch (err) {
     await client.query("ROLLBACK");
     console.error("Error creating transaction:", err);
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   } finally {
     client.release();
   }

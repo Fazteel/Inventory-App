@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 const { Header } = Layout;
 
 const HeaderComponent = ({ collapsed, setCollapsed, colorBgContainer }) => {
-
   const navigate = useNavigate();
 
   const handleLogout = () => {

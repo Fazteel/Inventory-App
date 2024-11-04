@@ -43,12 +43,12 @@ const AddTransaction = ({ onTransactionAdded, addedBy }) => {
     const handleSubmit = async (values) => {
         try {
             const transaction = {
-                ...values,
-                added_by: addedBy, // Menyimpan ID pengguna yang login
+                added_by: addedBy,
                 items: items.map(item => ({
-                    product_id: item.product_id,
+                    product_id: item.product_id, 
+                    product_name: item.name, 
                     quantity: item.quantity,
-                    price: products.find(p => p.id === item.product_id)?.price || 0
+                    price: item.price
                 }))
             };
 
@@ -72,9 +72,9 @@ const AddTransaction = ({ onTransactionAdded, addedBy }) => {
             const product = products.find(p => p.id === values.product_id);
             setItems([ ...items, {
                 product_id: values.product_id,
+                name: product.name,
                 quantity: values.quantity,
-                price: product.price,
-                name: product.name
+                price: product.price
             } ]);
             form.setFieldsValue({ product_id: undefined, quantity: undefined });
         }
@@ -131,7 +131,7 @@ const AddTransaction = ({ onTransactionAdded, addedBy }) => {
                         </div>
                     ))}
 
-                    <div style={{  borderTop: '1px solid #f0f0f0',  marginTop: '16px', paddingTop: '16px' }}>
+                    <div style={{ borderTop: '1px solid #f0f0f0', marginTop: '16px', paddingTop: '16px' }}>
                         <strong>Total Amount: {formatRupiah(items.reduce((sum, item) =>
                             sum + (item.price * item.quantity), 0).toFixed(2))}</strong>
                     </div>

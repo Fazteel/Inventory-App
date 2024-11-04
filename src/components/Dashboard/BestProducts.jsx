@@ -30,14 +30,14 @@ const BestProducts = () => {
     return (
         <Card bordered={false} className='w-full h-80'>
             <div className="flex items-center justify-center mb-4 pt-2">
-                <h5 className="text-xl font-bold leading-none text-gray-900 dark:text-white">Best Products</h5>
+                <h5 className="text-xl font-semibold leading-none text-gray-900 dark:text-white">Best Products</h5>
             </div>
             <List itemLayout="horizontal" dataSource={transactions} renderItem={(item) => (
                 <List.Item className='p-3'>
                     <List.Item.Meta
-                        title={<Text strong>{item.product_name}</Text>}
+                        title={<Text className='font-semibold text-gray-800'>{item.product_name}</Text>}
                     />
-                    <div><Text>{item.total_quantity}</Text></div>
+                    <div><Text className='font-bold text-gray-900'>{item.total_quantity}</Text></div>
                 </List.Item>
             )}
             />
