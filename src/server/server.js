@@ -7,6 +7,7 @@ const productRoute = require("./routes/productRoute");
 const transactionRoute = require("./routes/transactionRoute");
 const supplierRoute = require("./routes/supplierRoute");
 const authRoute = require("./routes/authRoute");
+const roleRoute = require("./routes/roleRoute")
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/api", productRoute);
 app.use("/api", transactionRoute);
 app.use("/api", supplierRoute);
 app.use("/api", authRoute);
+app.use("/api", roleRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

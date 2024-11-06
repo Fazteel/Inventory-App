@@ -3,7 +3,6 @@ import { Table, Space, Typography, Button, Tooltip, Modal, message } from 'antd'
 import { EyeOutlined, EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import AddUser from './AddUser';
-import AddRole from './AddRole';
 
 const UsersTable = () => {
   const [ users, setUsers ] = useState([]);
@@ -118,7 +117,6 @@ const UsersTable = () => {
         <Typography.Title level={4}>Users</Typography.Title>
         <div className='flex gap-2'>
           <AddUser onUserAdded={handleUserAdded} />
-          <AddRole/>
         </div>
       </div>
       <Table

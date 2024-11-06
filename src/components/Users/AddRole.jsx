@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, Input, Checkbox, Divider, message } from 'antd';
+import { Modal, Button, Form, Input, Checkbox, message } from 'antd';
 import axios from 'axios';
 
 const pageActions = [
   {
-    label: 'User Management',
-    value: 'user',
+    label: 'User  Management',
+    value: 'users',
     actions: [
       { label: 'CRUD - Create', value: 'create' },
       { label: 'CRUD - Read', value: 'view' },
@@ -15,7 +15,7 @@ const pageActions = [
   },
   {
     label: 'Product Management',
-    value: 'product',
+    value: 'products',
     actions: [
       { label: 'CRUD - Create', value: 'create' },
       { label: 'CRUD - Read', value: 'view' },
@@ -25,13 +25,12 @@ const pageActions = [
   },
   {
     label: 'Transaction Management',
-    value: 'transaction',
+    value: 'transactions',
     actions: [
       { label: 'CRUD - Create', value: 'create' },
       { label: 'CRUD - Read', value: 'view' },
       { label: 'CRUD - Update', value: 'edit' },
       { label: 'CRUD - Delete', value: 'delete' },
-      { label: 'Transaction Cancel', value: 'cancel' },
     ],
   },
   {
@@ -42,7 +41,6 @@ const pageActions = [
       { label: 'CRUD - Read', value: 'view' },
       { label: 'CRUD - Update', value: 'edit' },
       { label: 'CRUD - Delete', value: 'delete' },
-      { label: 'Inventory Adjust', value: 'adjust' },
     ],
   },
   {
@@ -56,34 +54,43 @@ const pageActions = [
 ];
 
 const AddRole = ({ onRoleAdded }) => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [selectedPermissions, setSelectedPermissions] = useState(
-    pageActions.reduce((acc, page) => ({ ...acc, [page.value]: [] }), {})
+  const [ isModalVisible, setIsModalVisible ] = useState(false);
+  const [ form ] = Form.useForm();
+  const [ selectedPermissions, setSelectedPermissions ] = useState(
+    pageActions.reduce((acc, page) => ({ ...acc, [ page.value ]: [] }), {})
   );
 
   const showModal = () => setIsModalVisible(true);
 
   const handlePermissionChange = (pageValue, list) => {
-    setSelectedPermissions((prev) => ({ ...prev, [pageValue]: list }));
+    setSelectedPermissions((prev) => ({ ...prev, [ pageValue ]: list }));
   };
 
   const handleCheckAllChange = (pageValue, actions, checked) => {
     setSelectedPermissions((prev) => ({
       ...prev,
-      [pageValue]: checked ? actions.map((action) => action.value) : [],
+      [ pageValue ]: checked ? actions.map((action) => action.value) : [],
     }));
   };
 
   const handleOk = async (values) => {
     const { role_name } = values;
-    const permissions = Object.entries(selectedPermissions).flatMap(([page, actions]) =>
-      actions.map((action) => `${page}.${action}`)
+    const permissions = Object.entries(selectedPermissions).flatMap(([resource, actions]) =>
+      actions.map((action) => {
+        switch (action) {
+          case 'view':
+            return `read:${resource}`; // Ubah 'view' menjadi 'read'
+          case 'edit':
+            return `update:${resource}`; // Ubah 'edit' menjadi 'update'
+          default:
+            return `${action}:${resource}`;
+        }
+      })
     );
-
+  
     try {
-      await axios.post('http://localhost:5000/api/roles/add', {
-        role_name,
+      await axios.post('http://localhost:5000/api/roles', {
+        name: role_name,
         permissions,
       });
       message.success('Role added successfully!');
@@ -106,32 +113,32 @@ const AddRole = ({ onRoleAdded }) => {
       <Button color="default" variant="solid" onClick={showModal}>
         Add Role
       </Button>
-      <Modal title="Create New Role" open={isModalVisible} onCancel={handleCancel} footer={null} style={{top: 20}}>
+      <Modal title="Create New Role" open={isModalVisible} onCancel={handleCancel} footer={null} style={{ top: 20 }}>
         <Form layout="vertical" form={form} onFinish={handleOk}>
           <Form.Item
             label="Role Name"
             name="role_name"
-            rules={[{ required: true, message: 'Please input the role name!' }]}
+            rules={[ { required: true, message: 'Please input the role name!' } ]}
           >
             <Input placeholder="Role Name" />
           </Form.Item>
 
           {pageActions.map((page) => {
-            const allChecked = selectedPermissions[page.value].length === page.actions.length;
+            const allChecked = selectedPermissions[ page.value ].length === page.actions.length;
             const indeterminate =
-              selectedPermissions[page.value].length > 0 &&
-              selectedPermissions[page.value].length < page.actions.length;
+              selectedPermissions[ page.value ].length > 0 &&
+              selectedPermissions[ page.value ].length < page.actions.length;
 
             return (
               <div key={page.value} style={{ marginBottom: '1rem' }}>
                 <Checkbox indeterminate={indeterminate} onChange={(e) =>
-                    handleCheckAllChange(page.value, page.actions, e.target.checked)
-                  } checked={allChecked} className='mb-2'>
+                  handleCheckAllChange(page.value, page.actions, e.target.checked)
+                } checked={allChecked} className='mb-2'>
                   {page.label} - Check all
                 </Checkbox>
                 <Checkbox.Group
-                  options={page.actions}
-                  value={selectedPermissions[page.value]}
+                  options={page.actions.map(action => ({ label: action.label, value: action.value }))}
+                  value={selectedPermissions[ page.value ]}
                   onChange={(list) => handlePermissionChange(page.value, list)}
                 />
               </div>

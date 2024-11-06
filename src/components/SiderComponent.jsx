@@ -40,6 +40,16 @@ const SiderComponent = ({ collapsed }) => {
       key: '/users',
       icon: <TbUsers />,
       label: 'Users',
+      items: [
+        {
+          key: '/users/users',
+          label: 'Data Users',
+        },
+        {
+          key: '/users/roles',
+          label: 'Data Roles',
+        },
+      ]
     },
     {
       key: '/products',

@@ -37,7 +37,7 @@ const HighValues = () => {
             <div className="flex items-center justify-center mb-4 pt-2">
                 <h5 className="text-xl font-semibold leading-none text-gray-900 dark:text-white">Highest Values</h5>
             </div>
-            <List itemLayout="horizontal" dataSource={products} renderItem={(item) => (
+            <List itemLayout="horizontal" dataSource={products || {} } renderItem={(item) => (
                 <List.Item className='p-3'>
                     <List.Item.Meta
                         title={<Text className='font-semibold text-gray-800'>{item.product_name}</Text>}
