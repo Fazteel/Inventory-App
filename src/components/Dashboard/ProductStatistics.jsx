@@ -3,12 +3,12 @@ import ApexCharts from 'apexcharts';
 import axios from 'axios';
 
 const ProductStatistics = () => {
-    const [ chartData, setChartData ] = useState({
+    const [chartData, setChartData] = useState({
         categories: [],
         series: []
     });
-    const [ loading, setLoading ] = useState(true);
-    const [ error, setError ] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
 
@@ -19,11 +19,9 @@ const ProductStatistics = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            // Gunakan URL lengkap ke API endpoint
             const response = await axios.get('http://localhost:5000/api/product-stats', {
                 headers: {
                     'Content-Type': 'application/json',
-                    // Tambahkan headers lain jika diperlukan
                 }
             });
 
@@ -36,7 +34,7 @@ const ProductStatistics = () => {
             }
 
             // Sort data by date
-            const sortedData = [ ...data ].sort((a, b) => {
+            const sortedData = [...data].sort((a, b) => {
                 const dateA = new Date(a.date);
                 const dateB = new Date(b.date);
                 return dateA - dateB;
@@ -50,15 +48,25 @@ const ProductStatistics = () => {
                 });
             });
 
-            const series = [ {
-                name: 'Total Products',
-                data: sortedData.map(item => parseInt(item.total))
-            } ];
+            const series = [
+                {
+                    name: 'Total Products',
+                    data: sortedData.map(item => parseInt(item.total_products))
+                },
+                {
+                    name: 'Stock In',
+                    data: sortedData.map(item => parseInt(item.total_quantity_in))
+                },
+                {
+                    name: 'Stock Out',
+                    data: sortedData.map(item => parseInt(item.total_quantity_out))
+                }
+            ];
 
             setChartData({ categories, series });
             setError(null);
         } catch (error) {
-            console.error('Error details:', error.response || error); // Debug log
+            console.error('Error details:', error.response || error);
             setError(`Failed to load data: ${error.message}`);
         } finally {
             setLoading(false);
@@ -66,9 +74,7 @@ const ProductStatistics = () => {
     };
 
     useEffect(() => {
-        // Memastikan ApexCharts tersedia dan ada data
         if (chartRef.current && chartData.categories.length > 0) {
-            // Destroy existing chart instance if it exists
             if (chartInstance.current) {
                 chartInstance.current.destroy();
             }
@@ -115,27 +121,30 @@ const ProductStatistics = () => {
                     curve: 'smooth',
                     width: 3
                 },
-                colors: [ '#3B82F6' ],
+                colors: ['#3B82F6', '#10B981', '#EF4444'], 
                 tooltip: {
                     theme: 'dark',
                     x: {
                         show: true
                     }
+                },
+                legend: {
+                    show: true,
+                    position: 'top',
+                    horizontalAlign: 'right'
                 }
             };
 
-            // Create new chart instance
             chartInstance.current = new ApexCharts(chartRef.current, options);
             chartInstance.current.render();
         }
 
-        // Cleanup function
         return () => {
             if (chartInstance.current) {
                 chartInstance.current.destroy();
             }
         };
-    }, [ chartData ]);
+    }, [chartData]);
 
     if (loading) {
         return (
@@ -153,18 +162,40 @@ const ProductStatistics = () => {
         );
     }
 
-    const latestTotal = chartData.series[ 0 ]?.data[ chartData.series[ 0 ]?.data.length - 1 ] || 0;
+    const latestProducts = chartData.series[0]?.data[chartData.series[0]?.data.length - 1] || 0;
+    const latestQuantityIn = chartData.series[1]?.data[chartData.series[1]?.data.length - 1] || 0;
+    const latestQuantityOut = chartData.series[2]?.data[chartData.series[2]?.data.length - 1] || 0;
 
     return (
         <div className="w-full h-auto bg-white shadow-md rounded-xl dark:bg-gray-800">
             <div className="flex justify-between p-4 md:p-6 pb-0 md:pb-0">
-                <div>
-                    <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">
-                        {latestTotal.toLocaleString()}
-                    </h5>
-                    <p className="text-base font-normal text-gray-500 dark:text-gray-400">
-                        Total Products Today
-                    </p>
+                <div className="flex justify-between w-full px-2">
+                    <div>
+                        <h5 className="leading-none text-2xl font-bold text-gray-900 dark:text-white pb-2">
+                            {latestProducts.toLocaleString()}
+                        </h5>
+                        <p className="text-md font-normal text-gray-500 dark:text-gray-400">
+                            Total Products
+                        </p>
+                    </div>
+                    <div className='flex gap-4'>
+                        <div>
+                            <h5 className="leading-none text-2xl font-bold text-emerald-500 pb-2">
+                                {latestQuantityIn.toLocaleString()}
+                            </h5>
+                            <p className="text-md font-normal text-gray-500 dark:text-gray-400">
+                                Stock In
+                            </p>
+                        </div>
+                        <div>
+                            <h5 className="leading-none text-2xl font-bold text-red-500 pb-2">
+                                {latestQuantityOut.toLocaleString()}
+                            </h5>
+                            <p className="text-md font-normal text-gray-500 dark:text-gray-400">
+                                Stock Out
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div ref={chartRef} className="px-3 py-2 bg-white rounded-xl dark:bg-gray-800" />

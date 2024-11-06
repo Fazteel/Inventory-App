@@ -74,14 +74,6 @@ const AuthForm = () => {
             </Form.Item>
           </Form>
 
-          <div className="text-center">
-            <p className="text-gray-600 text-sm">
-              Don't have an account?{' '}
-              <a className="text-blue-600 hover:text-blue-800" href="#">
-                Register here
-              </a>
-            </p>
-          </div>
         </div>
         <div
           className="md:w-1/2 bg-cover bg-center h-64 md:h-auto"

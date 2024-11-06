@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Form, Input, InputNumber, Select, message } from 'antd';
+import { Modal, Form, Input, Select, message } from 'antd';
 import axios from 'axios';
 
 const { Option } = Select;

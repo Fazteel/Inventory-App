@@ -75,13 +75,40 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductStats = async (req, res) => {
   try {
-    const result = await query('SELECT DATE(created_at) as date, COUNT(*) as total FROM products GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 7');
+    const result = await query(`
+      WITH daily_stats AS (
+          SELECT 
+              DATE(created_at) as date,
+              COUNT(*) as total_products, 
+              SUM(quantity) as total_quantity_in
+          FROM products 
+          WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+          GROUP BY DATE(created_at)
+      ),
+      daily_transactions AS (
+          SELECT 
+              DATE(tr.transaction_date) as date,
+              SUM(ti.quantity) as total_quantity_out
+          FROM transactions tr
+          JOIN transaction_items ti ON tr.id = ti.transaction_id
+          WHERE tr.transaction_date >= CURRENT_DATE - INTERVAL '30 days'
+          GROUP BY DATE(tr.transaction_date)
+      )
+      SELECT 
+          ds.date,
+          ds.total_products,
+          ds.total_quantity_in,
+          COALESCE(dt.total_quantity_out, 0) as total_quantity_out
+      FROM daily_stats ds
+      LEFT JOIN daily_transactions dt ON ds.date = dt.date
+      ORDER BY ds.date DESC
+    `);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error in getProductStats:', error);
+    console.error("Error in getProductStats:", error);
     res.status(500).json({ error: error.message, stack: error.stack });
   }
-}
+};
 
 exports.addProduct = async (req, res) => {
   const { name, description, price, quantity, supplier_id, added_by } =
