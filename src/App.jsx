@@ -11,25 +11,22 @@ import ReportTransactions from './pages/ReportsTransactions';
 import SupplierManagement from './pages/SupplierManagement';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
-import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
+import ProtectedRoute from './components/ProtectedRoute'; 
 
 function App() {
-  const token = localStorage.getItem('token'); // Cek apakah user sudah login
+  const token = localStorage.getItem('token'); 
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* Jika belum login, arahkan ke halaman login */}
         {!token ? (
           <Route path="*" element={<Navigate to="/login" replace />} />
         ) : (
           <Route path="*" element={<Navigate to="/" replace />} />
         )}
 
-        {/* Route untuk halaman login */}
         <Route path="/login" element={<Login />} />
 
-        {/* Proteksi rute-rute lain dengan ProtectedRoute */}
         <Route path="/" element={<ProtectedRoute><Layouts /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="users">

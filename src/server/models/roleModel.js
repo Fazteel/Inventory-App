@@ -19,8 +19,8 @@ const Role = {
   },
 
   findAll: async () => {
-    const result = await query("SELECT * FROM roles"); // Mengambil semua roles
-    return result.rows; // Mengembalikan array dari semua role
+    const result = await query("SELECT * FROM roles"); 
+    return result.rows; 
   },
 
   getPermissions: async (roleId) => {
