@@ -6,19 +6,25 @@ import AddTransaction from './AddTransaction';
 import TransactionDetails from './TransactionDetails';
 
 const TransactionsTable = () => {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [detailsVisible, setDetailsVisible] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [addedBy, setAddedBy] = useState(null);
+  const [ transactions, setTransactions ] = useState([]);
+  const [ loading, setLoading ] = useState(true);
+  const [ detailsVisible, setDetailsVisible ] = useState(false);
+  const [ selectedTransaction, setSelectedTransaction ] = useState(null);
+  const [ addedBy, setAddedBy ] = useState(null);
+  const [ permissions, setPermissions ] = useState({
+    canCreate: false
+  })
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (userInfo && userInfo.id) {
       setAddedBy(userInfo.id);
+      setPermissions({
+        canCreate: userInfo.permissions.includes('create:transactions')
+      })
     }
     fetchTransactions();
-  }, []); 
+  }, []);
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -96,7 +102,9 @@ const TransactionsTable = () => {
     <div className='p-3'>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={4}>Transactions</Typography.Title>
-        <AddTransaction addedBy={addedBy} onTransactionAdded={fetchTransactions} />
+        {permissions.canCreate && (
+          <AddTransaction addedBy={addedBy} onTransactionAdded={fetchTransactions} />
+        )}
       </div>
 
       <Table

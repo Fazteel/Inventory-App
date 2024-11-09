@@ -13,11 +13,21 @@ const SuppliersTable = () => {
   const [ detailsVisible, setDetailsVisible ] = useState(false);
   const [ selectedSupplier, setSelectedSupplier ] = useState(null);
   const [ addedBy, setAddedBy ] = useState(null);
+  const [ permissions, setPermissions ] = useState({
+    canCreate: false,
+    canUpdate: false,
+    canDelete: false
+  })
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (userInfo && userInfo.id) {
       setAddedBy(userInfo.id);
+      setPermissions({
+        canCreate: userInfo.permissions.includes('create:suppliers'),
+        canUpdate: userInfo.permissions.includes('update:suppliers'),
+        canDelete: userInfo.permissions.includes('delete:suppliers')
+      })
     }
     fetchSuppliers();
   }, []);
@@ -126,12 +136,16 @@ const SuppliersTable = () => {
           <Tooltip title="View Details">
             <Button icon={<EyeOutlined />} onClick={() => showSupplierDetails(record)} />
           </Tooltip>
-          <Tooltip title="Edit">
-            <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
-          </Tooltip>
+          {permissions.canUpdate && (
+            <Tooltip title="Edit">
+              <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+            </Tooltip>
+          )}
+          {permissions.canDelete && (
+            <Tooltip title="Delete">
+              <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
@@ -145,7 +159,9 @@ const SuppliersTable = () => {
     <div className='p-3'>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={4}>Suppliers</Typography.Title>
-        <AddSupplier onSupplierAdded={handleSupplierAdded} />
+        {permissions.canCreate && (
+          <AddSupplier onSupplierAdded={handleSupplierAdded} />
+        )}
       </div>
       <Table
         loading={loading}

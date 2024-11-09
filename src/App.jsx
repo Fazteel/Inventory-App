@@ -22,7 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           <Route path="/" element={<ProtectedRoute><Layouts /></ProtectedRoute>}>
-            <Route index element={<Dashboard />} /> {/* Accessible by all roles */}
+            <Route index element={<Dashboard />} /> 
 
             <Route path="users">
               <Route path='users' element={<ProtectedRoute requiredPermission="read:users"><UserManagement /></ProtectedRoute>} />

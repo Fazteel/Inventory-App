@@ -1,24 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Space, Typography, message, Modal, Button, Tooltip } from 'antd'; // Import Modal
-import { ExclamationCircleFilled, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'; // Import ikon
+import { Table, Space, Typography, message, Modal, Button, Tooltip } from 'antd';
+import { ExclamationCircleFilled, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import AddProduct from './AddProduct';
 import EditProduct from './EditProduct';
-import ProductDetails from './ProductDetails'
+import ProductDetails from './ProductDetails';
 
 const ProductsTable = () => {
-  const [ products, setProducts ] = useState([]);
-  const [ suppliers, setSuppliers ] = useState([]);
-  const [ loading, setLoading ] = useState(true);
-  const [ editingProduct, setEditingProduct ] = useState(null);
-  const [ detailsVisible, setDetailsVisible ] = useState(false);
-  const [ selectedProduct, setSelectedProduct ] = useState(null);
-  const [ addedBy, setAddedBy ] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [addedBy, setAddedBy] = useState(null);
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canUpdate: false,
+    canDelete: false
+  });
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
     if (userInfo && userInfo.id) {
       setAddedBy(userInfo.id);
+      setPermissions({
+        canCreate: userInfo.permissions.includes('create:products'),
+        canUpdate: userInfo.permissions.includes('update:products'),
+        canDelete: userInfo.permissions.includes('delete:products')
+      });
     }
     fetchProducts();
     fetchSuppliers();
@@ -30,7 +40,7 @@ const ProductsTable = () => {
       const response = await axios.get('http://localhost:5000/api/products', {
         headers: {
           Authorization: localStorage.getItem("token"),
-      },
+        },
       });
       setProducts(response.data);
     } catch (error) {
@@ -46,7 +56,7 @@ const ProductsTable = () => {
       const response = await axios.get('http://localhost:5000/api/suppliers', {
         headers: {
           Authorization: localStorage.getItem("token"),
-      },
+        },
       });
       setSuppliers(response.data);
     } catch (error) {
@@ -79,9 +89,6 @@ const ProductsTable = () => {
       onOk() {
         handleDelete(id);
       },
-      onCancel() {
-        console.log('Cancel');
-      },
     });
   };
 
@@ -109,7 +116,6 @@ const ProductsTable = () => {
     setDetailsVisible(true);
   };
 
-  // Format angka menjadi Rupiah
   const formatRupiah = (value) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
   };
@@ -152,31 +158,33 @@ const ProductsTable = () => {
           <Tooltip title="View Details">
             <Button icon={<EyeOutlined />} onClick={() => showProductDetails(record)} />
           </Tooltip>
-          <Tooltip title="Edit">
-            <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
-          </Tooltip>
+          {permissions.canUpdate && (
+            <Tooltip title="Edit">
+              <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+            </Tooltip>
+          )}
+          {permissions.canDelete && (
+            <Tooltip title="Delete">
+              <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
+            </Tooltip>
+          )}
         </Space>
       ),
     },
   ];
 
-  const onChange = (pagination, filters, sorter, extra) => {
-    console.log('params', pagination, filters, sorter, extra);
-  };
-
   return (
     <div className='p-3'>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={4}>Products</Typography.Title>
-        <AddProduct onProductAdded={handleProductAdded} addedBy={addedBy} />
+        {permissions.canCreate && (
+          <AddProduct onProductAdded={handleProductAdded} addedBy={addedBy} />
+        )}
       </div>
-      <Table loading={loading}
+      <Table
+        loading={loading}
         columns={columns}
         dataSource={products}
-        onChange={onChange}
         rowKey="id"
         pagination={{ pageSize: 5 }}
       />

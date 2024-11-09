@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../server/contexts/authContext';
 // Logo
 import Logo from '../assets/icons/logo.svg';
 // Icons
@@ -14,20 +15,21 @@ const { SubMenu } = Menu;
 
 const SiderComponent = ({ collapsed }) => {
   const location = useLocation();
+  const { user } = useAuth(); // Mengambil data user dari context
+  const [openKeys, setOpenKeys] = useState([]);
 
-  // State to manage the open keys for collapsible sub-menus
-  const [ openKeys, setOpenKeys ] = useState([]);
+  // Function untuk memeriksa apakah user memiliki permission
+  const hasPermission = (permission) => {
+    return user?.permissions?.includes(permission) || false;
+  };
 
-  // Handle opening and closing of sub-menus
-  const onOpenChange = (keys) => {
-    const latestOpenKey = keys.find(key => openKeys.indexOf(key) === -1);
-
-    // Close all other sub-menus if a new one is opened
-    if (latestOpenKey) {
-      setOpenKeys([ latestOpenKey ]);
-    } else {
-      setOpenKeys([]);
+  // Function untuk memeriksa apakah suatu menu harus ditampilkan
+  const shouldShowMenuItem = (permissions) => {
+    if (!permissions) return true; // Jika tidak ada permission yang diperlukan, tampilkan menu
+    if (Array.isArray(permissions)) {
+      return permissions.some(permission => hasPermission(permission));
     }
+    return hasPermission(permissions);
   };
 
   const items = [
@@ -35,19 +37,23 @@ const SiderComponent = ({ collapsed }) => {
       key: '/',
       icon: <LuBox />,
       label: 'Dashboard',
+      // Dashboard bisa diakses semua user yang sudah login
     },
     {
       key: '/users',
       icon: <TbUsers />,
       label: 'Users',
+      permissions: ['read:users', 'read:roles'], // Perlu salah satu permission
       items: [
         {
           key: '/users/users',
           label: 'Data Users',
+          permission: 'read:users'
         },
         {
           key: '/users/roles',
           label: 'Data Roles',
+          permission: 'read:roles'
         },
       ]
     },
@@ -55,14 +61,17 @@ const SiderComponent = ({ collapsed }) => {
       key: '/products',
       icon: <AiFillProduct />,
       label: 'Products',
+      permissions: ['read:products', 'read:suppliers'], // Perlu salah satu permission
       items: [
         {
           key: '/products/products',
           label: 'Data Products',
+          permission: 'read:products'
         },
         {
           key: '/products/suppliers',
           label: 'Data Suppliers',
+          permission: 'read:suppliers'
         },
       ]
     },
@@ -70,19 +79,23 @@ const SiderComponent = ({ collapsed }) => {
       key: '/transactions',
       icon: <FaCartShopping />,
       label: 'Transactions',
+      permission: 'read:transactions'
     },
     {
       key: 'reports',
       icon: <TbReport />,
       label: 'Reports',
+      permissions: ['read:reports:products', 'read:reports:transactions'],
       items: [
         {
           key: '/reports/products',
           label: 'Report Products',
+          permission: 'read:reports:products'
         },
         {
           key: '/reports/transactions',
           label: 'Report Transactions',
+          permission: 'read:reports:transactions'
         },
       ],
     },
@@ -90,8 +103,44 @@ const SiderComponent = ({ collapsed }) => {
       key: '/settings',
       icon: <FaGear />,
       label: 'Settings',
+      permission: 'read:settings'
     },
   ];
+
+  // Filter menu items berdasarkan permission
+  const filterMenuItems = (menuItems) => {
+    return menuItems.filter(item => {
+      // Cek apakah item memiliki permission yang diperlukan
+      const hasRequiredPermission = shouldShowMenuItem(item.permission || item.permissions);
+      
+      if (!hasRequiredPermission) return false;
+
+      // Jika item memiliki sub-items, filter juga sub-itemsnya
+      if (item.items) {
+        const filteredItems = item.items.filter(subItem => 
+          shouldShowMenuItem(subItem.permission || subItem.permissions)
+        );
+        
+        // Jika tidak ada sub-items yang tersisa setelah filtering, jangan tampilkan parent menu
+        if (filteredItems.length === 0) return false;
+        
+        item.items = filteredItems;
+      }
+
+      return true;
+    });
+  };
+
+  const filteredItems = filterMenuItems(items);
+
+  const onOpenChange = (keys) => {
+    const latestOpenKey = keys.find(key => openKeys.indexOf(key) === -1);
+    if (latestOpenKey) {
+      setOpenKeys([latestOpenKey]);
+    } else {
+      setOpenKeys([]);
+    }
+  };
 
   return (
     <Sider trigger={null} collapsible collapsed={collapsed} className='fixed h-full left-0 z-10'>
@@ -101,8 +150,15 @@ const SiderComponent = ({ collapsed }) => {
           <span className='font-bold text-white ml-2 text-lg'>StockHawk</span>
         )}
       </div>
-      <Menu theme='dark' mode='inline' className='flex flex-col h-full space-y-4 my-3' selectedKeys={[ location.pathname ]} openKeys={openKeys} onOpenChange={onOpenChange} >
-        {items.map((item) =>
+      <Menu 
+        theme='dark' 
+        mode='inline' 
+        className='flex flex-col h-full space-y-4 my-3' 
+        selectedKeys={[location.pathname]} 
+        openKeys={openKeys} 
+        onOpenChange={onOpenChange}
+      >
+        {filteredItems.map((item) =>
           item.items ? (
             <SubMenu key={item.key} icon={item.icon} title={item.label}>
               {item.items.map((child) => (
