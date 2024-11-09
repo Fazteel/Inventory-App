@@ -1,22 +1,26 @@
 // routes/roleRoutes.js
 const express = require('express');
-const authMiddleware = require('../middleware/authMiddleware'); 
+const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware');
 const checkPermissions = require('../middleware/checkPermissions');
 const {
   getRoles,
   createRole,
   updateRole,
-  deleteRole,
+  softDeleteRole,
+  getRolePermissions
 } = require('../controllers/roleController');
 
-const router = express.Router();
-
-// Terapkan authMiddleware untuk semua rute
+// Terapkan middleware auth untuk semua routes
 router.use(authMiddleware);
 
-router.get('/roles', checkPermissions('read:roles'), getRoles);
-router.post('/roles', checkPermissions('create:roles'), createRole);
-router.put('/roles/:id', checkPermissions('update:roles'), updateRole);
-router.delete('/roles/:id', checkPermissions('delete:roles'), deleteRole);
+// routes/roleRoutes.js
+router.get('/:id/permissions', checkPermissions('read:roles'), getRolePermissions);
+
+// Role routes
+router.get('/', checkPermissions('read:roles'), getRoles);
+router.post('/', checkPermissions('create:roles'), createRole);  
+router.put('/:id', checkPermissions('update:roles'), updateRole);
+router.delete('/:id', checkPermissions('delete:roles'), softDeleteRole); 
 
 module.exports = router;

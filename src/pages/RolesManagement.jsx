@@ -1,8 +1,6 @@
 // UserManagement.js
 import React from 'react';
-import { Breadcrumb } from 'antd';
-import AddUser from '../components/Users/AddUser';
-import RolesTable from '../components/Users/RolesTable';
+import RolesTable from '../components/Roles/RolesTable';
 
 const RolesManagement = () => {
   return (

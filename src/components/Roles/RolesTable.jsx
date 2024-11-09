@@ -3,22 +3,25 @@ import { Table, Space, Typography, Button, Tooltip, Modal, message } from 'antd'
 import { EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import AddRole from './AddRole';
+import EditRole from './EditRole';
 
 const RolesTable = () => {
-  const [ roles, setRoles ] = useState([]); // Mengubah state dari users menjadi roles
+  const [ roles, setRoles ] = useState([]);
   const [ loading, setLoading ] = useState(true);
+  const [ selectedRole, setSelectedRole ] = useState(null);
+  const [ isEditModalVisible, setIsEditModalVisible ] = useState(false);
 
   useEffect(() => {
-    fetchRoles(); // Mengambil data roles saat komponen di-mount
+    fetchRoles(); // Fetch roles when the component mounts
   }, []);
 
   const fetchRoles = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/roles/roles', {
+      const response = await axios.get('http://localhost:5000/api/roles', {
         headers: {
           Authorization: localStorage.getItem("token"),
-        },      
+        },
       });
       setRoles(response.data);
     } catch (error) {
@@ -27,18 +30,17 @@ const RolesTable = () => {
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
-  const handleDelete = async (id) => {
-    try {
-      // Menghapus role dengan ID yang diberikan
-      await axios.delete(`http://localhost:5000/api/roles/${id}`);
-      message.success('Role deleted successfully!');
-      fetchRoles(); // Refresh the roles list after deletion
-    } catch (error) {
-      message.error('Failed to delete role');
-      console.error('Error deleting role:', error);
-    }
+  const handleEdit = (role) => {
+    setSelectedRole(role);
+    setIsEditModalVisible(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalVisible(false);
+    setSelectedRole(null);
+    fetchRoles();
   };
 
   const showDeleteConfirm = (id) => {
@@ -58,6 +60,19 @@ const RolesTable = () => {
     });
   };
 
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.delete(`http://localhost:5000/api/roles/${id}`);
+      if (response.data) {
+        message.success('Role deleted successfully!');
+        fetchRoles();
+      }
+    } catch (error) {
+      console.error('Error deleting role:', error);
+      message.error('Failed to delete role');
+    }
+  };
+
   const columns = [
     {
       title: 'No',
@@ -68,6 +83,7 @@ const RolesTable = () => {
       title: 'Role Name',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Action',
@@ -100,6 +116,13 @@ const RolesTable = () => {
         rowKey="id"
         pagination={{ pageSize: 5 }}
       />
+      {selectedRole && (
+        <EditRole
+          visible={isEditModalVisible}
+          role={selectedRole}
+          onClose={closeEditModal}
+        />
+      )}
     </div>
   );
 };

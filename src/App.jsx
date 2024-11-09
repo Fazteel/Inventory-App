@@ -36,8 +36,8 @@ function App() {
 
             <Route path="transactions" element={<ProtectedRoute requiredPermission="read:transactions"><TransactionManagement /></ProtectedRoute>} />
             <Route path="reports">
-              <Route path="products" element={<ProtectedRoute requiredPermission="read:reports:products"><ReportProducts /></ProtectedRoute>} />
-              <Route path="transactions" element={<ProtectedRoute requiredPermission="read:reports:transactions"><ReportTransactions /></ProtectedRoute>} />
+              <Route path="products" element={<ProtectedRoute requiredPermission="reports:products"><ReportProducts /></ProtectedRoute>} />
+              <Route path="transactions" element={<ProtectedRoute requiredPermission="reports:transactions"><ReportTransactions /></ProtectedRoute>} />
             </Route>
             <Route path="settings" element={<ProtectedRoute requiredPermission="read:settings"><Settings /></ProtectedRoute>} />
           </Route>

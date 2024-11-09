@@ -85,17 +85,17 @@ const SiderComponent = ({ collapsed }) => {
       key: 'reports',
       icon: <TbReport />,
       label: 'Reports',
-      permissions: ['read:reports:products', 'read:reports:transactions'],
+      permissions: ['reports:products', 'reports:transactions'],
       items: [
         {
           key: '/reports/products',
           label: 'Report Products',
-          permission: 'read:reports:products'
+          permission: 'reports:products'
         },
         {
           key: '/reports/transactions',
           label: 'Report Transactions',
-          permission: 'read:reports:transactions'
+          permission: 'reports:transactions'
         },
       ],
     },
