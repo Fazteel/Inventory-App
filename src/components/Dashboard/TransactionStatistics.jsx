@@ -19,8 +19,9 @@ const TransactionStatistics = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/transactions-stats', {
+            const response = await axios.get('http://localhost:5000/api/transactions/transactions-stats', {
                 headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'application/json',
                 }
             });

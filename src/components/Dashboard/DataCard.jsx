@@ -13,17 +13,28 @@ const DataCard = () => {
 
     useEffect(() => {
         const fetchProductData = async () => {
+            const token = localStorage.getItem('token'); 
+
             try {
-                const productCount = await axios.get('http://localhost:5000/api/products/count');
+                // Kirimkan token di header Authorization
+                const productCount = await axios.get('http://localhost:5000/api/products/count', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 setTotalProducts(productCount.data.count);
 
-                const productInResponse = await axios.get('http://localhost:5000/api/products/total-in');
+                const productInResponse = await axios.get('http://localhost:5000/api/products/total-in', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 setTotalIn(productInResponse.data.total_in || 0);
 
-                const productOutResponse = await axios.get('http://localhost:5000/api/transactions/total-out');
+                const productOutResponse = await axios.get('http://localhost:5000/api/transactions/total-out', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 setTotalOut(productOutResponse.data.total_out || 0);
 
-                const assetsResponse = await axios.get('http://localhost:5000/api/products/total-assets');
+                const assetsResponse = await axios.get('http://localhost:5000/api/products/total-assets', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 setTotalAssets(assetsResponse.data.total_assets || 0);
             } catch (error) {
                 console.error("Error fetching data:", error);

@@ -5,8 +5,8 @@ import axios from 'axios';
 import AddRole from './AddRole';
 
 const RolesTable = () => {
-  const [roles, setRoles] = useState([]); // Mengubah state dari users menjadi roles
-  const [loading, setLoading] = useState(true);
+  const [ roles, setRoles ] = useState([]); // Mengubah state dari users menjadi roles
+  const [ loading, setLoading ] = useState(true);
 
   useEffect(() => {
     fetchRoles(); // Mengambil data roles saat komponen di-mount
@@ -15,7 +15,11 @@ const RolesTable = () => {
   const fetchRoles = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/roles'); // Mengambil data roles
+      const response = await axios.get('http://localhost:5000/api/roles/roles', {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },      
+      });
       setRoles(response.data);
     } catch (error) {
       console.error('Error fetching roles:', error);
@@ -23,10 +27,18 @@ const RolesTable = () => {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   const handleDelete = async (id) => {
-    // Implementasi untuk menghapus role jika diperlukan
+    try {
+      // Menghapus role dengan ID yang diberikan
+      await axios.delete(`http://localhost:5000/api/roles/${id}`);
+      message.success('Role deleted successfully!');
+      fetchRoles(); // Refresh the roles list after deletion
+    } catch (error) {
+      message.error('Failed to delete role');
+      console.error('Error deleting role:', error);
+    }
   };
 
   const showDeleteConfirm = (id) => {
@@ -55,7 +67,7 @@ const RolesTable = () => {
     {
       title: 'Role Name',
       dataIndex: 'name',
- key: 'name',
+      key: 'name',
     },
     {
       title: 'Action',

@@ -1,5 +1,8 @@
+// routes/supplierRoutes.js
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../middleware/authMiddleware");
+const checkPermissions = require("../middleware/checkPermissions");
 const {
   getSuppliers,
   createSupplier,
@@ -7,9 +10,11 @@ const {
   deleteSupplier,
 } = require("../controllers/supplierController");
 
-router.get("/suppliers", getSuppliers);
-router.post("/suppliers/add", createSupplier);
-router.put("/suppliers/:id", updateSupplier);
-router.delete("/suppliers/:id", deleteSupplier);
+router.use(authMiddleware);
+
+router.get("/", checkPermissions('read:suppliers'), getSuppliers);
+router.post("/add", checkPermissions('create:suppliers'), createSupplier);
+router.put("/:id", checkPermissions('update:suppliers'), updateSupplier);
+router.delete("/:id", checkPermissions('delete:suppliers'), deleteSupplier);
 
 module.exports = router;

@@ -19,8 +19,8 @@ const Role = {
   },
 
   findAll: async () => {
-    const result = await query("SELECT * FROM roles"); 
-    return result.rows; 
+    const result = await query("SELECT * FROM roles");
+    return result.rows;
   },
 
   getPermissions: async (roleId) => {
@@ -46,23 +46,19 @@ const Role = {
       .map((result) => result.rows[0]?.id)
       .filter((id) => id !== undefined);
 
-    console.log("Permission IDs:", permissionIds); // Log permission IDs
-
-    if (permissionIds.length > 0) {
-      // Menyimpan role permissions
-      const rolePermissionQueries = permissionIds.map((permissionId) => {
-        return query(
-          "INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)",
-          [roleId, permissionId]
-        );
-      });
-
-      await Promise.all(rolePermissionQueries); // Tunggu hingga semua query selesai
-      console.log("Role permissions added for role ID:", roleId); // Log setelah menambahkan
-    } else {
-      console.log("No valid permissions to add for role ID:", roleId);
+    if (permissionIds.length === 0) {
+      throw new Error("No valid permissions to add");
     }
 
+    // Menyimpan role permissions
+    const rolePermissionQueries = permissionIds.map((permissionId) => {
+      return query(
+        "INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)",
+        [roleId, permissionId]
+      );
+    });
+
+    await Promise.all(rolePermissionQueries); // Tunggu hingga semua query selesai
     return permissionIds;
   },
 };

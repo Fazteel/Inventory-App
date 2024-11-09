@@ -5,38 +5,79 @@ import Logo from '../assets/icons/logo-biru.svg';
 import backgroundImage from '../assets/icons/login.svg';
 
 const AuthForm = () => {
-  const [ loading, setLoading ] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (values) => {
     setLoading(true);
-    try {
-      console.log('Attempting login with:', values); // Debug log
+    console.log('=== LOGIN REQUEST START ===');
 
-      const response = await axios.post('http://localhost:5000/api/login', {
-        username: values.username,
-        password: values.password,
+    try {
+      const loginData = {
+        username: values.username.trim(),
+        password: values.password.trim(),
+        remember: values.remember
+      };
+
+      const response = await axios.post(
+        'http://localhost:5000/api/auth/login',
+        loginData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 5000
+        }
+      );      
+
+      console.log('Login response:', response.data);
+
+      if (response.data && response.data.token) {
+        // Simpan token tanpa prefix 'Bearer '
+        localStorage.setItem('token', response.data.token);
+        
+        if (response.data.user) {
+          localStorage.setItem('userInfo', JSON.stringify(response.data.user));
+        }
+      
+        if (response.data.user && response.data.user.permissions) {
+          localStorage.setItem('permissions', JSON.stringify(response.data.user.permissions));
+        }      
+
+        message.success('Login berhasil!');
+
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Login error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
       });
 
-      console.log('Login response:', response.data); // Debug log
+      let errorMessage = 'Login gagal. Silakan coba lagi.';
 
-      // Simpan token dan data user ke localStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('userInfo', JSON.stringify({
-        id: response.data.user.id,
-        username: response.data.user.username,
-        // tambahkan data pengguna lainnya sesuai kebutuhan
-      }));
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            errorMessage = error.response.data.msg || 'Username atau password salah';
+            break;
+          case 400:
+            errorMessage = error.response.data.msg || 'Data login tidak valid';
+            break;
+          case 500:
+            errorMessage = 'Server error. Silakan coba lagi nanti.';
+            break;
+          default:
+            errorMessage = error.response.data.msg || errorMessage;
+        }
+      }
 
-      // Umpan balik sukses dan navigasi
-      message.success('Login berhasil!');
-      window.location.href = '/dashboard';
-    } catch (error) {
-      console.error('Login error:', error.response?.data || error); // Debug log
-
-      const errorMessage = error.response?.data?.msg || 'Login gagal. Silakan coba lagi.';
       message.error(errorMessage);
     } finally {
       setLoading(false);
+      console.log('=== LOGIN REQUEST END ===');
     }
   };
 
@@ -54,26 +95,55 @@ const AuthForm = () => {
             Enter to get unlimited access to data & information.
           </p>
 
-          <Form name="basic" layout="vertical" initialValues={{ remember: true }} onFinish={handleLogin} autoComplete="off" >
-            <Form.Item label="Username" name="username" rules={[ { required: true, message: 'Please input your username!' } ]} className='mb-2'>
+          <Form
+            name="basic"
+            layout="vertical"
+            initialValues={{ remember: true }}
+            onFinish={handleLogin}
+            autoComplete="off"
+          >
+            <Form.Item
+              label="Username"
+              name="username"
+              rules={[
+                { required: true, message: 'Please input your username!' },
+                { whitespace: true, message: 'Username cannot be empty!' },
+                { min: 3, message: 'Username must be at least 3 characters!' }
+              ]}
+              className="mb-2"
+            >
               <Input />
             </Form.Item>
 
-            <Form.Item label="Password" name="password" rules={[ { required: true, message: 'Please input your password!' } ]} className='mb-2'>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: 'Please input your password!' },
+                { whitespace: true, message: 'Password cannot be empty!' },
+                { min: 6, message: 'Password must be at least 6 characters!' }
+              ]}
+              className="mb-2"
+            >
               <Input.Password />
             </Form.Item>
 
-            <Form.Item name="remember" valuePropName="checked" className='mb-3'>
+            <Form.Item name="remember" valuePropName="checked" className="mb-3">
               <Checkbox>Remember me</Checkbox>
             </Form.Item>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" className="w-full" loading={loading} >
-                Login
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="w-full"
+                loading={loading}
+                disabled={loading}
+              >
+                {loading ? 'Logging in...' : 'Login'}
               </Button>
             </Form.Item>
           </Form>
-
         </div>
         <div
           className="md:w-1/2 bg-cover bg-center h-64 md:h-auto"

@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import './index.css';
+import { AuthProvider } from './server/contexts/authContext';
 import Layouts from './layouts/Layouts';
 import Dashboard from './pages/Dashboard';
 import UserManagement from './pages/UserManagement';
@@ -11,40 +12,39 @@ import ReportTransactions from './pages/ReportsTransactions';
 import SupplierManagement from './pages/SupplierManagement';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
-import ProtectedRoute from './components/ProtectedRoute'; 
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  const token = localStorage.getItem('token'); 
-
   return (
     <BrowserRouter>
-      <Routes>
-        {!token ? (
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        ) : (
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+
+          <Route path="/" element={<ProtectedRoute><Layouts /></ProtectedRoute>}>
+            <Route index element={<Dashboard />} /> {/* Accessible by all roles */}
+
+            <Route path="users">
+              <Route path='users' element={<ProtectedRoute requiredPermission="read:users"><UserManagement /></ProtectedRoute>} />
+              <Route path='roles' element={<ProtectedRoute requiredPermission="read:roles"><RolesManagement /></ProtectedRoute>} />
+            </Route>
+
+            <Route path="products">
+              <Route path="products" element={<ProtectedRoute requiredPermission="read:products"><ProductManagement /></ProtectedRoute>} />
+              <Route path="suppliers" element={<ProtectedRoute requiredPermission="read:suppliers"><SupplierManagement /></ProtectedRoute>} />
+            </Route>
+
+            <Route path="transactions" element={<ProtectedRoute requiredPermission="read:transactions"><TransactionManagement /></ProtectedRoute>} />
+            <Route path="reports">
+              <Route path="products" element={<ProtectedRoute requiredPermission="read:reports:products"><ReportProducts /></ProtectedRoute>} />
+              <Route path="transactions" element={<ProtectedRoute requiredPermission="read:reports:transactions"><ReportTransactions /></ProtectedRoute>} />
+            </Route>
+            <Route path="settings" element={<ProtectedRoute requiredPermission="read:settings"><Settings /></ProtectedRoute>} />
+          </Route>
+
           <Route path="*" element={<Navigate to="/" replace />} />
-        )}
-
-        <Route path="/login" element={<Login />} />
-
-        <Route path="/" element={<ProtectedRoute><Layouts /></ProtectedRoute>}>
-          <Route index element={<Dashboard />} />
-          <Route path="users">
-            <Route path='users' element={<UserManagement/>} />
-            <Route path='roles' element={<RolesManagement/>} />
-          </Route>
-          <Route path="products">
-            <Route path="products" element={<ProductManagement />} />
-            <Route path="suppliers" element={<SupplierManagement />} />
-          </Route>
-          <Route path="transactions" element={<TransactionManagement />} />
-          <Route path="reports">
-            <Route path="products" element={<ReportProducts />} />
-            <Route path="transactions" element={<ReportTransactions />} />
-          </Route>
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

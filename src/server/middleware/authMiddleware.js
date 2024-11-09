@@ -1,38 +1,49 @@
-const jwt = require('jsonwebtoken');
+// authMiddleware.js
+const jwt = require("jsonwebtoken");
+const { query } = require("../db");
 
-const auth = (roles = []) => {
-  return (req, res, next) => {
-    const token = req.header('Authorization').split(' ')[1];
+const authMiddleware = async (req, res, next) => {
+  if (!req.headers || !req.headers.authorization) {
+    return res.status(401).json({ 
+      msg: "Authorization token missing",
+      needsRelogin: true 
+    });
+  }
 
-    if (!token) {
-      return res.status(401).json({ msg: 'No token, authorization denied' });
-    }
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ 
+      msg: "Invalid token format",
+      needsRelogin: true 
+    });
+  }
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded.user;
+  const token = authHeader.split(" ")[1];
 
-      if (roles.length && !roles.some(role => req.user.roles.includes(role))) {
-        return res.status(403).json({ msg: 'Access denied' });
-      }
-
-      next();
-    } catch (err) {
-      console.error(err.message);
-      res.status(401).json({ msg: 'Token is not valid' });
-    }
-  };
-};
-
-const authorize = (requiredRoles) => {
-  return (req, res, next) => {
-    const { role } = req.user; 
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    if (!requiredRoles.includes(role)) {
-      return res.status(403).json({ message: "Forbidden: Insufficient Permissions" });
+    // Check if user still exists in database
+    const userQuery = "SELECT * FROM users WHERE id = $1";
+    const userResult = await query(userQuery, [decoded.user.id]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ 
+        msg: "User no longer exists",
+        needsRelogin: true 
+      });
     }
+
+    req.user = decoded.user;
     next();
-  };
+  } catch (err) {
+    console.error("Auth middleware error:", err.message);
+    return res.status(401).json({ 
+      msg: "Invalid or expired token",
+      needsRelogin: true 
+    });
+  }
 };
 
-module.exports = {auth, authorize};
+module.exports = authMiddleware;

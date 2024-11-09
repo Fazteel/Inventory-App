@@ -26,7 +26,7 @@ async function addUser(username, password, email) {
     // Insert default role (assuming role_id 2 is for regular users)
     const roleQuery =
       "INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)";
-    await client.query(roleQuery, [userId, 2]);
+    await client.query(roleQuery, [userId, 13]);
 
     await client.query("COMMIT");
 
@@ -48,7 +48,7 @@ async function addUser(username, password, email) {
 // Update call to createInitialUser to include email
 async function createInitialUser() {
   try {
-    const userId = await addUser("admin", "admin123", "admin@gmail.com"); // Menyertakan email
+    const userId = await addUser("manager", "manager123", "manager@gmail.com"); // Menyertakan email
     console.log("Initial user created with ID:", userId);
   } catch (error) {
     console.error("Failed to create initial user:", error);

@@ -27,7 +27,11 @@ const ProductsTable = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/products');
+      const response = await axios.get('http://localhost:5000/api/products', {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+      },
+      });
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -39,7 +43,11 @@ const ProductsTable = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/suppliers');
+      const response = await axios.get('http://localhost:5000/api/suppliers', {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+      },
+      });
       setSuppliers(response.data);
     } catch (error) {
       console.error('Error fetching suppliers:', error);

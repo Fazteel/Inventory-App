@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const pool = require("../db");
+const { query } = require("../db");
 
 exports.login = async (req, res) => {
   try {
@@ -19,7 +19,7 @@ exports.login = async (req, res) => {
 
     // Check user existence
     const userQuery = "SELECT * FROM users WHERE username = $1";
-    const userResult = await pool.query(userQuery, [username]);
+    const userResult = await query(userQuery, [username]);
 
     if (userResult.rows.length === 0) {
       console.log("User not found:", username);
@@ -48,7 +48,7 @@ exports.login = async (req, res) => {
       INNER JOIN user_roles ur ON ur.role_id = r.id
       WHERE ur.user_id = $1
     `;
-    const roleResult = await pool.query(roleQuery, [user.id]);
+    const roleResult = await query(roleQuery, [user.id]);
 
     if (roleResult.rows.length === 0) {
       console.log("No roles found for user:", username);
@@ -57,12 +57,25 @@ exports.login = async (req, res) => {
 
     const roles = roleResult.rows.map((row) => row.name);
 
+    // Get permissions for the user's roles
+    const permissionQuery = `
+      SELECT p.name 
+      FROM permissions p
+      INNER JOIN role_permissions rp ON rp.permission_id = p.id
+      INNER JOIN roles r ON r.id = rp.role_id
+      WHERE r.name = ANY($1)
+    `;
+    const permissionResult = await query(permissionQuery, [roles]);
+
+    const permissions = permissionResult.rows.map((row) => row.name);
+
     // Create JWT payload
     const payload = {
       user: {
         id: user.id,
         username: user.username,
-        roles: roles,
+        roles: roles,  // Include the roles
+        permissions: permissions,  // Include the permissions
       },
     };
 
@@ -70,7 +83,7 @@ exports.login = async (req, res) => {
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: "5m" },
+      { expiresIn: "30d" },
       (err, token) => {
         if (err) {
           console.error("JWT Error:", err);
@@ -82,18 +95,96 @@ exports.login = async (req, res) => {
             id: user.id,
             username: user.username,
             roles: roles,
+            permissions: permissions // Ensure permissions are included if necessary
           },
         });
       }
     );
+    
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
   }
 };
 
-// authController.js
+exports.verifyToken = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    
+    if (!token) {
+      return res.status(401).json({ 
+        msg: "No token provided",
+        needsRelogin: true 
+      });
+    }
 
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      
+      // Check if user still exists and is active
+      const userQuery = "SELECT * FROM users WHERE id = $1";
+      const userResult = await query(userQuery, [decoded.user.id]);
+
+      if (userResult.rows.length === 0) {
+        return res.status(401).json({ 
+          msg: "User no longer exists",
+          needsRelogin: true 
+        });
+      }
+
+      // Get fresh roles and permissions
+      const roleQuery = `
+        SELECT r.name 
+        FROM roles r
+        INNER JOIN user_roles ur ON ur.role_id = r.id
+        WHERE ur.user_id = $1
+      `;
+      const roleResult = await query(roleQuery, [decoded.user.id]);
+      const roles = roleResult.rows.map(row => row.name);
+
+      const permissionQuery = `
+        SELECT p.name 
+        FROM permissions p
+        INNER JOIN role_permissions rp ON rp.permission_id = p.id
+        INNER JOIN roles r ON r.id = rp.role_id
+        WHERE r.name = ANY($1)
+      `;
+      const permissionResult = await query(permissionQuery, [roles]);
+      const permissions = permissionResult.rows.map(row => row.name);
+
+      // Issue a new token with fresh data
+      const payload = {
+        user: {
+          id: decoded.user.id,
+          username: userResult.rows[0].username,
+          roles: roles,
+          permissions: permissions,
+        }
+      };
+
+      const newToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "30d" });
+
+      return res.json({
+        valid: true,
+        token: newToken,
+        user: payload.user
+      });
+
+    } catch (err) {
+      return res.status(401).json({ 
+        msg: "Token invalid or expired",
+        needsRelogin: true 
+      });
+    }
+  } catch (err) {
+    console.error("Token verification error:", err);
+    return res.status(500).json({ 
+      msg: "Server error during verification",
+      needsRelogin: true 
+    });
+  }
+};
 // ... kode lainnya ...
 
 exports.register = async (req, res) => {
@@ -101,7 +192,7 @@ exports.register = async (req, res) => {
     const { username, password } = req.body;
 
     // Check if user already exists
-    const userExists = await pool.query(
+    const userExists = await query(
       "SELECT * FROM users WHERE username = $1",
       [username]
     );
@@ -114,7 +205,7 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Begin transaction
-    const client = await pool.connect();
+    const client = await connect();
     try {
       await client.query("BEGIN");
 
