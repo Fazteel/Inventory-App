@@ -44,11 +44,6 @@ const UsersTable = () => {
     fetchUsers();
   }, []);
 
-  const permissionsConfig = {
-    'users': [ 'read:users', 'read:roles' ],
-    'users:actions': [ 'update:users', 'delete:users' ]
-  };
-
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -129,26 +124,24 @@ const UsersTable = () => {
       dataIndex: 'role_name',
       key: 'role_name',
     },
-    (permissionsConfig[ 'users:actions' ].includes('update:users') || permissionsConfig[ 'users:actions' ].includes('delete:users')
-      ? [ {
-        title: 'Action',
-        key: 'action',
-        render: (_, record) => (
-          <Space size="small">
-            {permissions.canUpdate && (
-              <Tooltip title="Edit">
-                <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-              </Tooltip>
-            )}
-            {permissions.canDelete && (
-              <Tooltip title="Delete">
-                <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
-              </Tooltip>
-            )}
-          </Space>
-        ),
-      } ]
-      : []),
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Space size="small">
+          {permissions.canUpdate && (
+            <Tooltip title="Edit">
+              <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+            </Tooltip>
+          )}
+          {permissions.canDelete && (
+            <Tooltip title="Delete">
+              <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
+            </Tooltip>
+          )}
+        </Space>
+      ),
+    }
   ];
 
   return (

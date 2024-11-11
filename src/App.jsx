@@ -12,6 +12,8 @@ import ReportTransactions from './pages/ReportsTransactions';
 import SupplierManagement from './pages/SupplierManagement';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import SetNewPasswordForm from './pages/SetNewPasswordForm';
+import ChangePasswordForm from './pages/ChangePasswordForm';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -20,6 +22,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/set-password" element={<SetNewPasswordForm />} />
 
           <Route path="/" element={<ProtectedRoute><Layouts /></ProtectedRoute>}>
             <Route index element={<Dashboard />} /> 

@@ -5,12 +5,10 @@ import Logo from '../assets/icons/logo-biru.svg';
 import backgroundImage from '../assets/icons/login.svg';
 
 const AuthForm = () => {
-  const [loading, setLoading] = useState(false);
+  const [ loading, setLoading ] = useState(false);
 
   const handleLogin = async (values) => {
     setLoading(true);
-    console.log('=== LOGIN REQUEST START ===');
-
     try {
       const loginData = {
         username: values.username.trim(),
@@ -27,21 +25,21 @@ const AuthForm = () => {
           },
           timeout: 5000
         }
-      );      
+      );
 
       console.log('Login response:', response.data);
 
       if (response.data && response.data.token) {
         // Simpan token tanpa prefix 'Bearer '
         localStorage.setItem('token', response.data.token);
-        
+
         if (response.data.user) {
           localStorage.setItem('userInfo', JSON.stringify(response.data.user));
         }
-      
+
         if (response.data.user && response.data.user.permissions) {
           localStorage.setItem('permissions', JSON.stringify(response.data.user.permissions));
-        }      
+        }
 
         message.success('Login berhasil!');
 
@@ -77,7 +75,6 @@ const AuthForm = () => {
       message.error(errorMessage);
     } finally {
       setLoading(false);
-      console.log('=== LOGIN REQUEST END ===');
     }
   };
 
@@ -128,9 +125,16 @@ const AuthForm = () => {
               <Input.Password />
             </Form.Item>
 
-            <Form.Item name="remember" valuePropName="checked" className="mb-3">
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
+            <div className="flex justify-between mb-2">
+              <Form.Item name="remember" valuePropName="checked">
+                <Checkbox>Remember me</Checkbox>
+              </Form.Item>
+              <Form.Item name="forgot">
+                <a className="text-blue-600 hover:text-blue-800" href="#">
+                  Forgot Password?
+                </a>
+              </Form.Item>
+            </div>
 
             <Form.Item>
               <Button

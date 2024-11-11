@@ -37,31 +37,21 @@ exports.createUser = async (req, res) => {
     }
 
     const password = generateRandomPassword();
-    console.log(password);
     const hashedPassword = await bcrypt.hash(password, 10);
     
     // Buat user terlebih dahulu
-    const newUser = await createUser(username, hashedPassword, email);
+    const newUser = await createUser(username, hashedPassword, email, true);
     await assignRoleToUser(newUser.id, role_id);
 
     // Kirim email
     try {
-      await emailService.sendMail(
+      await emailService.sendWelcomeEmail(
         email,
-        "User Account Created",
-        `Hello ${username},\n\n
-
-        Your account has been successfully created.\n
-        Username: ${username}\n
-        Password: ${password}\n\n
-        Please change your password after logging in.\n\n
-        
-        Best regards,\n
-        Your App Team`
+        username,
+        password
       );
     } catch (emailError) {
       console.error("Failed to send email:", emailError);
-      // User sudah dibuat tapi email gagal terkirim
       return res.status(201).json({ 
         message: "User created successfully but failed to send email notification.",
         user: newUser

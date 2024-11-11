@@ -34,6 +34,13 @@ exports.login = async (req, res) => {
       hasPassword: !!user.password,
     });
 
+    if (user.is_first_login) {
+      return res.status(401).json({ 
+        msg: "Please set your password using the link sent to your email",
+        requirePasswordChange: true 
+      });
+    }
+
     // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -95,7 +102,7 @@ exports.login = async (req, res) => {
             id: user.id,
             username: user.username,
             roles: roles,
-            permissions: permissions // Ensure permissions are included if necessary
+            permissions: permissions 
           },
         });
       }
@@ -104,6 +111,49 @@ exports.login = async (req, res) => {
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
+  }
+};
+
+// controllers/authController.js
+
+exports.setFirstTimePassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Hash password baru
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password dan set is_first_login ke false
+    const updateQuery = `
+      UPDATE users 
+      SET password = $1, 
+          is_first_login = false 
+      WHERE email = $2 
+      RETURNING id, username, email
+    `;
+    
+    const result = await query(updateQuery, [hashedPassword, decoded.email]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.json({ 
+      msg: "Password set successfully", 
+      user: result.rows[0] 
+    });
+
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ msg: "Link has expired" });
+    }
+    res.status(500).json({ 
+      msg: "Error setting password", 
+      error: error.message 
+    });
   }
 };
 
@@ -187,53 +237,3 @@ exports.verifyToken = async (req, res) => {
 };
 // ... kode lainnya ...
 
-exports.register = async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    // Check if user already exists
-    const userExists = await query(
-      "SELECT * FROM users WHERE username = $1",
-      [username]
-    );
-
-    if (userExists.rows.length > 0) {
-      return res.status(400).json({ msg: "Username already exists" });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Begin transaction
-    const client = await connect();
-    try {
-      await client.query("BEGIN");
-
-      // Insert user
-      const userResult = await client.query(
-        "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id",
-        [username, hashedPassword]
-      );
-
-      const userId = userResult.rows[0].id;
-
-      // Assign default role (assuming role_id 2 is 'user')
-      await client.query(
-        "INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)",
-        [userId, 2]
-      );
-
-      await client.query("COMMIT");
-
-      res.json({ msg: "User registered successfully" });
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    } finally {
-      client.release();
-    }
-  } catch (err) {
-    console.error("Registration Error:", err);
-    res.status(500).json({ msg: "Server error" });
-  }
-};
