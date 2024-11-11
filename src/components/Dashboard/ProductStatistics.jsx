@@ -163,10 +163,10 @@ const ProductStatistics = () => {
         );
     }
 
-    const latestProducts = chartData.series[0]?.data[chartData.series[0]?.data.length - 1] || 0;
-    const latestQuantityIn = chartData.series[1]?.data[chartData.series[1]?.data.length - 1] || 0;
-    const latestQuantityOut = chartData.series[2]?.data[chartData.series[2]?.data.length - 1] || 0;
-
+    const latestProducts = chartData.series[0]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
+    const latestQuantityIn = chartData.series[1]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
+    const latestQuantityOut = chartData.series[2]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
+    
     return (
         <div className="w-full h-auto bg-white shadow-md rounded-xl dark:bg-gray-800">
             <div className="flex justify-between p-4 md:p-6 pb-0 md:pb-0">

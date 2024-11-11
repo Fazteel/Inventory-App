@@ -3,12 +3,12 @@ import ApexCharts from 'apexcharts';
 import axios from 'axios';
 
 const TransactionStatistics = () => {
-    const [chartData, setChartData] = useState({
+    const [ chartData, setChartData ] = useState({
         categories: [],
         series: []
     });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [ loading, setLoading ] = useState(true);
+    const [ error, setError ] = useState(null);
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
 
@@ -35,17 +35,17 @@ const TransactionStatistics = () => {
             }
 
             // Sort data by date
-            const sortedData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const sortedData = [ ...data ].sort((a, b) => new Date(a.date) - new Date(b.date));
 
             const categories = sortedData.map(item => {
                 const date = new Date(item.date);
                 return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
             });
 
-            const series = [{
+            const series = [ {
                 name: 'Sales',
                 data: sortedData.map(item => parseFloat(item.total_sales))
-            }];
+            } ];
 
             setChartData({ categories, series });
             setError(null);
@@ -105,7 +105,7 @@ const TransactionStatistics = () => {
                     curve: 'smooth',
                     width: 3
                 },
-                colors: ['#3B82F6'],
+                colors: [ '#3B82F6' ],
                 tooltip: {
                     theme: 'dark',
                     x: {
@@ -126,7 +126,7 @@ const TransactionStatistics = () => {
                 chartInstance.current.destroy();
             }
         };
-    }, [chartData]);
+    }, [ chartData ]);
 
     if (loading) {
         return (
@@ -144,10 +144,11 @@ const TransactionStatistics = () => {
         );
     }
 
-    const latestTotal = chartData.series[0]?.data[chartData.series[0]?.data.length - 1] || 0;
+    // Menghitung total penjualan 7 hari terakhir
+    const latestTotal = chartData.series[ 0 ]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
 
     return (
-        < div className="w-full h-auto bg-white shadow-md rounded-xl dark:bg-gray-800">
+        <div className="w-full h-auto bg-white shadow-md rounded-xl dark:bg-gray-800">
             <div className="flex justify-between p-3 px-3 md:p-6 pb-0 md:pb-0">
                 <div>
                     <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">
@@ -161,6 +162,7 @@ const TransactionStatistics = () => {
             <div ref={chartRef} className="px-3 py-2 bg-white rounded-xl dark:bg-gray-800" />
         </div>
     );
+
 };
 
 export default TransactionStatistics;
