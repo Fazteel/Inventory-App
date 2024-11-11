@@ -17,7 +17,7 @@ const checkPermissions = (requiredPermission) => {
         return res.status(401).json({ message: 'User not authenticated' });
       }
 
-      console.log('User ID:', userId);
+      // console.log('User ID:', userId);
 
       // Ambil roles dari user
       const userRolesQuery = `
@@ -33,7 +33,7 @@ const checkPermissions = (requiredPermission) => {
         return res.status(403).json({ message: 'Forbidden: User has no roles' });
       }
 
-      console.log('User Roles:', userRoles);
+      // console.log('User Roles:', userRoles);
 
       // Ambil permissions berdasarkan role
       const roleIds = userRoles.map((row) => row.id);
@@ -48,7 +48,7 @@ const checkPermissions = (requiredPermission) => {
         roleIds,
       ]);
 
-      console.log('Role Permissions:', rolePermissions);
+      // console.log('Role Permissions:', rolePermissions);
 
       const permissions = rolePermissions.map((perm) => perm.name);
       if (!permissions.includes(requiredPermission)) {

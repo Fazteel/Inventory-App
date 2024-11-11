@@ -1,17 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Space, Typography, Button, Tooltip, Modal, message } from 'antd';
-import { EyeOutlined, EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import AddUser from './AddUser';
 
 const UsersTable = () => {
-  const [ users, setUsers ] = useState([]);
-  const [ loading, setLoading ] = useState(true);
-  const [ addedBy, setAddedBy ] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [addedBy, setAddedBy] = useState(null);
+
+  // Create axios instance with default config
+  const api = axios.create({
+    baseURL: 'http://localhost:5000/api/users',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  // Add request interceptor to add token
+  api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    if (userInfo && userInfo.id) {
+    if (userInfo?.id) {
       setAddedBy(userInfo.id);
     }
     fetchUsers();
@@ -20,15 +37,16 @@ const UsersTable = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/users/users', {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-      },
-      });
+      const response = await api.get('/');
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
-      message.error('Failed to fetch users');
+      if (error.response?.status === 401) {
+        message.error('Please login again');
+        // Handle logout or redirect to login
+      } else {
+        message.error('Failed to fetch users');
+      }
     } finally {
       setLoading(false);
     }
@@ -41,7 +59,7 @@ const UsersTable = () => {
         return;
       }
 
-      const response = await axios.delete(`http://localhost:5000/api/users/${id}`, {
+      const response = await api.delete(`/${id}`, {
         data: { deleted_by: addedBy }
       });
 
@@ -65,10 +83,7 @@ const UsersTable = () => {
       cancelText: 'No',
       onOk() {
         handleDelete(id);
-      },
-      onCancel() {
-        console.log('Cancel');
-      },
+      }
     });
   };
 

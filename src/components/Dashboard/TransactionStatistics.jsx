@@ -148,7 +148,7 @@ const TransactionStatistics = () => {
 
     return (
         < div className="w-full h-auto bg-white shadow-md rounded-xl dark:bg-gray-800">
-            <div className="flex justify-between p-4 md:p-6 pb-0 md:pb-0">
+            <div className="flex justify-between p-3 px-3 md:p-6 pb-0 md:pb-0">
                 <div>
                     <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">
                         Rp {latestTotal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}

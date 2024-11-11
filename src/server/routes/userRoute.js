@@ -1,10 +1,18 @@
-// routes/userRoutes.js
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const userController = require("../controllers/userController");
+const {
+  getUsers,
+  createUser,
+  checkEmail,
+} = require('../controllers/userController');
+const authMiddleware = require('../middleware/authMiddleware'); // Middleware untuk autentikasi
 
-router.get("/users", userController.getUsers);
-router.post("/users/add", userController.createUser);
-router.post("/roles/add", userController.addRole);
+// Protect routes with authentication
+router.use(authMiddleware);
+
+// Routes
+router.get('/', getUsers);  // Ubah dari /users menjadi /
+router.post('/add', createUser);
+router.get('/check-email', checkEmail);
 
 module.exports = router;
