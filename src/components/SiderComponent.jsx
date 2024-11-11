@@ -37,13 +37,12 @@ const SiderComponent = ({ collapsed }) => {
       key: '/',
       icon: <LuBox />,
       label: 'Dashboard',
-      // Dashboard bisa diakses semua user yang sudah login
     },
     {
       key: '/users',
       icon: <TbUsers />,
       label: 'Users',
-      permissions: ['read:users', 'read:roles'], // Perlu salah satu permission
+      permissions: ['read:users', 'read:roles'], 
       items: [
         {
           key: '/users/users',
@@ -61,7 +60,7 @@ const SiderComponent = ({ collapsed }) => {
       key: '/products',
       icon: <AiFillProduct />,
       label: 'Products',
-      permissions: ['read:products', 'read:suppliers'], // Perlu salah satu permission
+      permissions: ['read:products', 'read:suppliers'], 
       items: [
         {
           key: '/products/products',

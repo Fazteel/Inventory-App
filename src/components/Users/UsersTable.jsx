@@ -5,9 +5,14 @@ import axios from 'axios';
 import AddUser from './AddUser';
 
 const UsersTable = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [addedBy, setAddedBy] = useState(null);
+  const [ users, setUsers ] = useState([]);
+  const [ loading, setLoading ] = useState(true);
+  const [ addedBy, setAddedBy ] = useState(null);
+  const [ permissions, setPermissions ] = useState({
+    canCreate: false,
+    canUpdate: false,
+    canDelete: false
+  });
 
   // Create axios instance with default config
   const api = axios.create({
@@ -28,11 +33,21 @@ const UsersTable = () => {
 
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    if (userInfo?.id) {
+    if (userInfo && userInfo.id) {
       setAddedBy(userInfo.id);
+      setPermissions({
+        canCreate: userInfo.permissions.includes('create:users'),
+        canUpdate: userInfo.permissions.includes('update:users'),
+        canDelete: userInfo.permissions.includes('delete:users')
+      });
     }
     fetchUsers();
   }, []);
+
+  const permissionsConfig = {
+    'users': [ 'read:users', 'read:roles' ],
+    'users:actions': [ 'update:users', 'delete:users' ]
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -114,29 +129,35 @@ const UsersTable = () => {
       dataIndex: 'role_name',
       key: 'role_name',
     },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="Edit">
-            <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
-          </Tooltip>
-        </Space>
-      ),
-    },
+    (permissionsConfig[ 'users:actions' ].includes('update:users') || permissionsConfig[ 'users:actions' ].includes('delete:users')
+      ? [ {
+        title: 'Action',
+        key: 'action',
+        render: (_, record) => (
+          <Space size="small">
+            {permissions.canUpdate && (
+              <Tooltip title="Edit">
+                <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+              </Tooltip>
+            )}
+            {permissions.canDelete && (
+              <Tooltip title="Delete">
+                <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
+              </Tooltip>
+            )}
+          </Space>
+        ),
+      } ]
+      : []),
   ];
 
   return (
     <div className='p-3'>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={4}>Users</Typography.Title>
-        <div className='flex gap-2'>
+        {permissions.canCreate && (
           <AddUser onUserAdded={handleUserAdded} />
-        </div>
+        )}
       </div>
       <Table
         loading={loading}
