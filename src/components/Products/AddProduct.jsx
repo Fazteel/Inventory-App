@@ -35,7 +35,7 @@ const AddProduct = ({ onProductAdded, addedBy }) => {
     const handleAdd = async (values) => {
         try {
             if (!addedBy) {
-                message.error('User  not logged in');
+                message.error('User not logged in');
                 return;
             }
 

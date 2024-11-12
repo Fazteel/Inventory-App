@@ -102,7 +102,7 @@ const AddTransaction = ({ onTransactionAdded, addedBy }) => {
                             <Select placeholder="Select product">
                                 {products.map(product => (
                                     <Option key={product.id} value={product.id}>
-                                        {product.name} - {formatRupiah(product.price)}
+                                        {product.name}
                                     </Option>
                                 ))}
                             </Select>

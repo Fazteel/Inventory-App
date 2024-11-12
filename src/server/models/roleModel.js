@@ -1,11 +1,15 @@
 // models/roleModel.js
 const { query } = require("../db");
 
-async function getAllRoles() {
+async function getAllRoles(excludeAdmin = false) {
   try {
-    const result = await query(
-      "SELECT * FROM roles WHERE deleted_at IS NULL ORDER BY updated_at DESC, created_at DESC"
-    );
+    let queryStr = "SELECT * FROM roles WHERE deleted_at IS NULL";
+    if (excludeAdmin) {
+      queryStr += " AND id != 1"; 
+    }
+    queryStr += " ORDER BY updated_at DESC, created_at DESC";
+    
+    const result = await query(queryStr);
     return result.rows;
   } catch (error) {
     console.error("Error fetching roles:", error);

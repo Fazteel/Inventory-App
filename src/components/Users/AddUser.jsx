@@ -7,15 +7,15 @@ const { Option } = Select;
 const AddUser = ({ onUserAdded }) => {
     const [ isModalVisible, setIsModalVisible ] = useState(false);
     const [ form ] = Form.useForm();
-    const [ username, setUsername ] = useState("");
-    const [ email, setEmail ] = useState("");
     const [ roles, setRoles ] = useState([]);
-    const [customMessage, setCustomMessage] = useState("");
 
     useEffect(() => {
         const fetchRoles = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/api/roles', {
+                    params: { 
+                        excludeAdmin: true  // Parameter baru untuk mengecualikan admin
+                    },
                     headers: {
                         Authorization: localStorage.getItem("token"),
                     },
@@ -44,7 +44,6 @@ const AddUser = ({ onUserAdded }) => {
             });
 
             if (emailCheckResponse.data.exists) {
-                // Show error if email exists
                 message.error('This email is already in use. Please use a different email.');
                 return;
             }
@@ -66,7 +65,6 @@ const AddUser = ({ onUserAdded }) => {
         }
     };
 
-
     const handleCancel = () => {
         setIsModalVisible(false);
     };
@@ -79,15 +77,30 @@ const AddUser = ({ onUserAdded }) => {
 
             <Modal title="Create New User" open={isModalVisible} onCancel={handleCancel} footer={null}>
                 <Form layout="vertical" form={form} onFinish={handleSubmit}>
-                    <Form.Item label="Name" name="username" rules={[ { required: true, message: 'Please input the name!' } ]} style={{ marginTop: '20px', marginBottom: '8px' }} >
-                        <Input placeholder="Name" />
+                    <Form.Item 
+                        label="Name" 
+                        name="username" 
+                        rules={[ { required: true, message: 'Please input the name!' } ]} 
+                        style={{ marginTop: '20px', marginBottom: '8px' }}
+                    >
+                        <Input/>
                     </Form.Item>
 
-                    <Form.Item label="Email" name="email" rules={[ { required: true, message: 'Please input the email!' } ]} style={{ marginBottom: '8px' }} >
-                        <Input type="email" placeholder="Email" />
+                    <Form.Item 
+                        label="Email" 
+                        name="email" 
+                        rules={[ { required: true, message: 'Please input the email!' } ]} 
+                        style={{ marginBottom: '8px' }}
+                    >
+                        <Input type="email"/>
                     </Form.Item>
 
-                    <Form.Item label="Role" name="role_id" rules={[ { required: true, message: 'Please select the role!' } ]} style={{ marginBottom: '8px' }} >
+                    <Form.Item 
+                        label="Role" 
+                        name="role_id" 
+                        rules={[ { required: true, message: 'Please select the role!' } ]} 
+                        style={{ marginBottom: '8px' }}
+                    >
                         <Select>
                             {roles.map(role => (
                                 <Option key={role.id} value={role.id}>

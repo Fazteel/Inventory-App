@@ -61,10 +61,6 @@ const HeaderComponent = ({ collapsed, setCollapsed, colorBgContainer }) => {
           }}
         />
         <div className='flex items-center mr-6'>
-          <button className='relative text-2xl text-gray-600 mr-4'>
-            <GoBell size={26} />
-            <span className='absolute top-0 right-0 -mt-1 -mr-1 flex justify-center items-center bg-blue-600 text-white font-semibold text-[10px] w-5 h-4 rounded-full border-2 border-white'>9</span>
-          </button>
           <Dropdown menu={{ items }} placement="bottomRight" trigger={[ 'click' ]} >
             <Avatar src={ProfileImage} size={30} icon={<AntDesignOutlined />} className='cursor-pointer'/>
           </Dropdown>

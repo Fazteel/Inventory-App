@@ -9,7 +9,6 @@ const DataCard = () => {
     const [ totalIn, setTotalIn ] = useState(0);
     const [ totalOut, setTotalOut ] = useState(0);
     const [ totalAssets, setTotalAssets ] = useState(0);
-    const [ loading, setLoading ] = useState(true);
 
     useEffect(() => {
         const fetchProductData = async () => {
@@ -38,8 +37,6 @@ const DataCard = () => {
                 setTotalAssets(assetsResponse.data.total_assets || 0);
             } catch (error) {
                 console.error("Error fetching data:", error);
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -59,10 +56,6 @@ const DataCard = () => {
         if (length > 12) return 'text-xl';
         return 'text-2xl';
     };
-
-    if (loading) {
-        return <Spin size="large" />;
-    }
 
     return (
         <Row gutter={[ 16, 16 ]}>

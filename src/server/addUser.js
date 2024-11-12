@@ -48,7 +48,7 @@ async function addUser(username, password, email) {
 // Update call to createInitialUser to include email
 async function createInitialUser() {
   try {
-    const userId = await addUser("manager", "manager123", "manager@gmail.com"); // Menyertakan email
+    const userId = await addUser("Admin", "Admin123", "Admin@gmail.com"); // Menyertakan email
     console.log("Initial user created with ID:", userId);
   } catch (error) {
     console.error("Failed to create initial user:", error);

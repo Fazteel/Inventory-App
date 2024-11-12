@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
 const {
-  createUser ,
+  createUser,
+  updateUser,
+  deleteUser,
   assignRoleToUser ,
   getAllUsersWithRoles,
   findUserByUsername,
@@ -83,13 +85,49 @@ exports.checkEmail = async (req, res) => {
   }
 };
 
-
 exports.getUsers = async (req, res) => {
   try {
-    const users = await getAllUsersWithRoles();
+    const currentUserId = req.user.id;
+    const users = await getAllUsersWithRoles(currentUserId);
     res.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ message: "Error fetching users." });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const updatedUser = await updateUser(id, updates);
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Error updating user." });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { deletedBy } = req.body;
+
+    // Pastikan pengguna yang sedang login memiliki izin untuk menghapus
+    if (!deletedBy) {
+      return res.status(401).json({ message: "Unauthorized to delete user" });
+    }
+
+    // Lakukan soft delete
+    const deletedUser = await deleteUser(id, deletedBy);
+
+    if (deletedUser) {
+      res.json({ message: "User deleted successfully", user: deletedUser });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Error deleting user" });
   }
 };

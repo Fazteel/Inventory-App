@@ -3,10 +3,13 @@ import { Table, Space, Typography, Button, Tooltip, Modal, message } from 'antd'
 import { EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import AddUser from './AddUser';
+import EditUser from './EditUser';
 
 const UsersTable = () => {
   const [ users, setUsers ] = useState([]);
   const [ loading, setLoading ] = useState(true);
+  const [ editingUser, setEditingUser ] = useState(null);
+  const [ roles, setRoles ] = useState([]);
   const [ addedBy, setAddedBy ] = useState(null);
   const [ permissions, setPermissions ] = useState({
     canCreate: false,
@@ -14,7 +17,6 @@ const UsersTable = () => {
     canDelete: false
   });
 
-  // Create axios instance with default config
   const api = axios.create({
     baseURL: 'http://localhost:5000/api/users',
     headers: {
@@ -22,7 +24,6 @@ const UsersTable = () => {
     }
   });
 
-  // Add request interceptor to add token
   api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -42,18 +43,18 @@ const UsersTable = () => {
       });
     }
     fetchUsers();
+    fetchRoles();
   }, []);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/');
+      const response = await axios.get('http://localhost:5000/api/users');
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
       if (error.response?.status === 401) {
         message.error('Please login again');
-        // Handle logout or redirect to login
       } else {
         message.error('Failed to fetch users');
       }
@@ -62,24 +63,41 @@ const UsersTable = () => {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/roles');
+      setRoles(response.data);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      message.error('Failed to fetch roles');
+    }
+  };
+
+  const handleEdit = (record) => {
+    setEditingUser(record);
+  };
+
+  const handleUpdate = () => {
+    fetchUsers();
+    setEditingUser(null);
+  };
+
   const handleDelete = async (id) => {
     try {
       if (!addedBy) {
-        message.error('User not logged in');
+        message.error("User  not logged in");
         return;
       }
-
       const response = await api.delete(`/${id}`, {
-        data: { deleted_by: addedBy }
+        data: { deletedBy: addedBy },
       });
-
       if (response.data) {
-        message.success('User deleted successfully!');
+        message.success("User  deleted successfully!");
         fetchUsers();
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
-      message.error('Failed to delete user');
+      console.error("Error deleting user:", error);
+      message.error("Failed to delete user");
     }
   };
 
@@ -111,13 +129,13 @@ const UsersTable = () => {
       title: 'Name',
       dataIndex: 'username',
       key: 'username',
-      sorter: (a, b) => a.username - b.username,
+      sorter: (a, b) => a.username.localeCompare(b.username),
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      sorter: (a, b) => a.email - b.email,
+      sorter: (a, b) => a.email.localeCompare(b.email),
     },
     {
       title: 'Role',
@@ -159,6 +177,16 @@ const UsersTable = () => {
         rowKey="id"
         pagination={{ pageSize: 5 }}
       />
+      {editingUser && (
+        <EditUser
+          visible={!!editingUser}
+          onClose={() => setEditingUser(null)}
+          user={editingUser}
+          roles={roles}
+          onUpdate={handleUpdate}
+          addedBy={addedBy}
+        />
+      )}
     </div>
   );
 };

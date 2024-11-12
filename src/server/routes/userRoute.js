@@ -3,6 +3,8 @@ const router = express.Router();
 const {
   getUsers,
   createUser,
+  updateUser,
+  deleteUser,
   checkEmail,
 } = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware'); // Middleware untuk autentikasi
@@ -11,8 +13,10 @@ const authMiddleware = require('../middleware/authMiddleware'); // Middleware un
 router.use(authMiddleware);
 
 // Routes
-router.get('/', getUsers);  // Ubah dari /users menjadi /
+router.get('/', getUsers); 
 router.post('/add', createUser);
 router.get('/check-email', checkEmail);
+router.put('/update/:id', updateUser);
+router.delete('/:id', deleteUser);
 
 module.exports = router;

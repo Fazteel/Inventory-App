@@ -28,6 +28,11 @@ exports.login = async (req, res) => {
 
     const user = userResult.rows[0];
 
+    // Cek apakah user sudah dihapus
+    if (user.is_deleted) {
+      return res.status(401).json({ msg: "User sudah dihapus, tidak dapat login" });
+    }
+
     // Debug log
     console.log("User found:", {
       userId: user.id,

@@ -9,7 +9,8 @@ const {
 
 exports.getRoles = async (req, res) => {
   try {
-    const roles = await getAllRoles();
+    const excludeAdmin = req.query.excludeAdmin === 'true';
+    const roles = await getAllRoles(excludeAdmin);
     res.json(roles);
   } catch (error) {
     console.error("Error fetching roles:", error);

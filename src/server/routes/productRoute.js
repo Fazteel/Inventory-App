@@ -9,7 +9,9 @@ const {
   getTotalAssets,
   getHighValueProducts,
   getAllProducts,
+  getProductsNotifications,
   addProduct,
+  addStock,
   getProductStats,
   updateProduct,
   deleteProduct,
@@ -17,6 +19,9 @@ const {
 
 // Terapkan middleware auth untuk semua routes
 router.use(authMiddleware);
+
+// Notification
+router.get("/notifications", checkPermissions('read:products'), getProductsNotifications);
 
 //Products Information
 router.get("/count", checkPermissions('read:products'), getProductCount);
@@ -28,6 +33,7 @@ router.get("/products-stats", checkPermissions('read:products'), getProductStats
 //Proses CRUD
 router.get("/", checkPermissions('read:products'), getAllProducts);
 router.post("/add", checkPermissions('create:products'), addProduct);
+router.post("/add-stock", checkPermissions('create:products'), addStock);
 router.put("/:id", checkPermissions('update:products'), updateProduct);
 router.delete("/:id", checkPermissions('delete:products'), deleteProduct);
 

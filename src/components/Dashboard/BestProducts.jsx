@@ -5,7 +5,6 @@ const { Text } = Typography;
 
 const BestProducts = () => {
     const [ transactions, setTransactions ] = useState([]);
-    const [ loading, setLoading ] = useState(true);
 
     useEffect(() => {
         const fetchBestProducts = async () => {
@@ -19,17 +18,11 @@ const BestProducts = () => {
                 setTransactions(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error("Error fetching best products:", error);
-            } finally {
-                setLoading(false);
             }
         };
 
         fetchBestProducts();
     }, []);
-
-    if (loading) {
-        return <Spin tip="Loading..." />;
-    }
 
     return (
         <Card bordered={false} className='w-full h-80'>

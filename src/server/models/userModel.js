@@ -13,16 +13,42 @@ async function createUser(username, password, email) {
   }
 }
 
+async function updateUser(id, updates) {
+  try {
+    const result = await query(
+      "UPDATE users SET username = $1, email = $2 WHERE id = $3 RETURNING *",
+      [updates.username, updates.email, id]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+}
+
+async function deleteUser(id, deletedBy) {
+  try {
+    const result = await query(
+      "UPDATE users SET is_deleted = true, deleted_by = $2 WHERE id = $1 RETURNING *",
+      [id, deletedBy]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error soft deleting user:", error);
+    throw error;
+  }
+}
+
 async function checkEmail(email) {
   try {
     const result = await query("SELECT * FROM users WHERE email = $1", [email]);
     if (result.rows.length > 0) {
-      return { exists: true };  // Return the result as an object
+      return { exists: true }; 
     }
-    return { exists: false };  // If no record is found
+    return { exists: false };  
   } catch (error) {
-    console.error('Error checking email:', error);  // Log the actual error
-    throw error;  // Throw the error to be handled in the controller
+    console.error('Error checking email:', error); 
+    throw error;  
   }
 }
 
@@ -46,14 +72,15 @@ findUserByUsername = async (username) => {
   return rows[0];
 };
 
-async function getAllUsersWithRoles() {
+async function getAllUsersWithRoles(excludedUserId) {
   try {
     const result = await query(`
-      SELECT u.id, u.username, u.email, r.name AS role_name 
-      FROM users u 
-      LEFT JOIN user_roles ur ON u.id = ur.user_id 
+      SELECT u.id, u.username, u.email, r.name AS role_name
+      FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
-    `);
+      WHERE u.id <> $1 AND u.is_deleted = false
+    `, [excludedUserId]);
     return result.rows;
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -63,6 +90,8 @@ async function getAllUsersWithRoles() {
 
 module.exports = {
   createUser,
+  updateUser,
+  deleteUser,
   assignRoleToUser,
   getAllUsersWithRoles,
   findUserByUsername,

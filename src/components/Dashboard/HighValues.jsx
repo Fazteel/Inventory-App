@@ -5,7 +5,6 @@ const { Text } = Typography;
 
 const HighValues = () => {
     const [ products, setProducts ] = useState([]);
-    const [ loading, setLoading ] = useState(true);
 
     useEffect(() => {
         const fetchHighValueProducts = async () => {
@@ -19,8 +18,6 @@ const HighValues = () => {
                 setProducts(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error("Error fetching high-value products:", error);
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -30,10 +27,6 @@ const HighValues = () => {
     const formatCurrency = (value) => {
         return new Intl.NumberFormat({ style: 'currency', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
     };
-
-    if (loading) {
-        return <Spin tip="Loading..." />;
-    }
 
     return (
         <Card bordered={false} className='w-full h-80'>

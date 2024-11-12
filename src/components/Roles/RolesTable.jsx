@@ -12,7 +12,7 @@ const RolesTable = () => {
   const [ isEditModalVisible, setIsEditModalVisible ] = useState(false);
 
   useEffect(() => {
-    fetchRoles(); // Fetch roles when the component mounts
+    fetchRoles();
   }, []);
 
   const fetchRoles = async () => {
@@ -23,7 +23,16 @@ const RolesTable = () => {
           Authorization: localStorage.getItem("token"),
         },
       });
-      setRoles(response.data);
+      
+      // Mengurutkan data dengan admin selalu di atas
+      const sortedRoles = response.data.sort((a, b) => {
+        if (a.id === 1) return -1; // admin ke atas
+        if (b.id === 1) return 1;  // admin ke atas
+        // Untuk role non-admin, urutkan berdasarkan nama
+        return a.name.localeCompare(b.name);
+      });
+      
+      setRoles(sortedRoles);
     } catch (error) {
       console.error('Error fetching roles:', error);
       message.error('Failed to fetch roles');
@@ -73,6 +82,13 @@ const RolesTable = () => {
     }
   };
 
+  // Custom sorter untuk kolom nama yang mempertahankan admin di atas
+  const nameColumnSorter = (a, b) => {
+    if (a.id === 1) return -1;
+    if (b.id === 1) return 1;
+    return a.name.localeCompare(b.name);
+  };
+
   const columns = [
     {
       title: 'No',
@@ -83,21 +99,38 @@ const RolesTable = () => {
       title: 'Role Name',
       dataIndex: 'name',
       key: 'name',
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      sorter: nameColumnSorter, // Menggunakan custom sorter
+      defaultSortOrder: 'ascend', // Optional: mengurutkan secara default
     },
     {
       title: 'Action',
       key: 'action',
-      render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="Edit">
-            <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
-          </Tooltip>
-        </Space>
-      ),
+      render: (_, record) => {
+        if (record.id === 1) {
+          return null;
+        }
+        
+        return (
+          <Space size="small">
+            <Tooltip title="Edit">
+              <Button 
+                color='default' 
+                variant='solid' 
+                icon={<EditOutlined />} 
+                onClick={() => handleEdit(record)} 
+              />
+            </Tooltip>
+            <Tooltip title="Delete">
+              <Button 
+                color='danger' 
+                variant='solid' 
+                icon={<DeleteOutlined />} 
+                onClick={() => showDeleteConfirm(record.id)} 
+              />
+            </Tooltip>
+          </Space>
+        );
+      },
     },
   ];
 

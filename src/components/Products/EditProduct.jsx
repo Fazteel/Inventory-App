@@ -45,19 +45,15 @@ const EditProduct = ({ visible, onClose, product, suppliers, onUpdate, addedBy }
     };
 
     return (
-        <Modal title="Edit Product" open={visible} onOk={handleUpdate} onCancel={onClose} style={{ top: 20 }} >
+        <Modal title="Edit Product" open={visible} onOk={handleUpdate} onCancel={onClose} >
             <Form form={form} layout="vertical" initialValues={product}>
                 <Form.Item label="Name" name="name" rules={[ { required: true, message: 'Please input the product name!' } ]} className='mb-2.5'>
                     <Input />
                 </Form.Item>
 
-                <Form.Item label="Price" name="price" rules={[ { required: true, message: 'Please input the product price!' } ]} className='mb-2.5'>
-                    <Input prefix='Rp' />
-                </Form.Item>
-
-                <Form.Item label="Quantity" name="quantity" rules={[ { required: true, message: 'Please input the product quantity!' } ]}
+                <Form.Item label="Price" name="price" rules={[ { required: true, message: 'Please input the product price!' } ]} className='mb-2.5'
                     style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px', marginRight: '12px' }} >
-                    <Input type="number" min={1} />
+                    <Input prefix='Rp' />
                 </Form.Item>
 
                 <Form.Item label="Supplier" name="supplier_id" rules={[ { required: true, message: 'Please select a supplier!' } ]}

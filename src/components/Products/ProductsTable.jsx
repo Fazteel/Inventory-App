@@ -3,18 +3,19 @@ import { Table, Space, Typography, message, Modal, Button, Tooltip } from 'antd'
 import { ExclamationCircleFilled, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import AddProduct from './AddProduct';
+import AddStock from './AddStock';
 import EditProduct from './EditProduct';
 import ProductDetails from './ProductDetails';
 
 const ProductsTable = () => {
-  const [products, setProducts] = useState([]);
-  const [suppliers, setSuppliers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [detailsVisible, setDetailsVisible] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [addedBy, setAddedBy] = useState(null);
-  const [permissions, setPermissions] = useState({
+  const [ products, setProducts ] = useState([]);
+  const [ suppliers, setSuppliers ] = useState([]);
+  const [ loading, setLoading ] = useState(true);
+  const [ editingProduct, setEditingProduct ] = useState(null);
+  const [ detailsVisible, setDetailsVisible ] = useState(false);
+  const [ selectedProduct, setSelectedProduct ] = useState(null);
+  const [ addedBy, setAddedBy ] = useState(null);
+  const [ permissions, setPermissions ] = useState({
     canCreate: false,
     canUpdate: false,
     canDelete: false
@@ -69,6 +70,10 @@ const ProductsTable = () => {
     fetchProducts();
   };
 
+  const handleStockAdded = () => {
+    fetchProducts();
+  };
+
   const handleEdit = (record) => {
     setEditingProduct(record);
   };
@@ -117,9 +122,14 @@ const ProductsTable = () => {
   };
 
   const formatRupiah = (value) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
   };
-
+  
   const columns = [
     {
       title: 'No',
@@ -130,7 +140,7 @@ const ProductsTable = () => {
       title: 'Product Name',
       dataIndex: 'name',
       key: 'name',
-      sorter: (a, b) => a.name - b.name,
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Price',
@@ -177,9 +187,12 @@ const ProductsTable = () => {
     <div className='p-3'>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={4}>Products</Typography.Title>
-        {permissions.canCreate && (
-          <AddProduct onProductAdded={handleProductAdded} addedBy={addedBy} />
-        )}
+        <div className='flex gap-2'>
+            <AddStock onProductAdded={handleStockAdded} addedBy={addedBy} />
+          {permissions.canCreate && (
+            <AddProduct onProductAdded={handleProductAdded} addedBy={addedBy} />
+          )}
+        </div>
       </div>
       <Table
         loading={loading}
