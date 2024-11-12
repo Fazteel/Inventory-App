@@ -21,7 +21,7 @@ const {
 router.use(authMiddleware);
 
 // Notification
-router.get("/notifications", checkPermissions('read:products'), getProductsNotifications);
+router.get("/notifications", checkPermissions('reports:products'), getProductsNotifications);
 
 //Products Information
 router.get("/count", checkPermissions('read:products'), getProductCount);

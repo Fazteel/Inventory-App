@@ -1,9 +1,10 @@
 import React from 'react'
+import TransactionNotifications from '../components/Reports/TransactionNotifications'
 
 const ReportsTransactions = () => {
   return (
-    <div className='p-6 bg-gray-200'>
-      Reports Transactions
+    <div className='p-3 bg-gray-200'>
+      <TransactionNotifications />
     </div>
   )
 }

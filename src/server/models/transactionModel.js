@@ -116,6 +116,51 @@ async function processTransactionItems(client, transactionId, items) {
   }
 }
 
+async function getTransactionNotifications() {
+  const result = await pool.query(`
+    SELECT 
+      transactions.id AS transaction_id,
+      users.username AS created_by,
+      transactions.transaction_date AS created_at,
+      transactions.total_amount,
+      products.name AS product_name,
+      transaction_items.quantity AS quantity_sold,
+      transaction_items.price AS product_price,
+      (transaction_items.quantity * transaction_items.price) AS total_per_product
+    FROM 
+      transactions
+    JOIN 
+      users ON transactions.user_id = users.id
+    JOIN 
+      transaction_items ON transactions.id = transaction_items.transaction_id
+    JOIN 
+      products ON transaction_items.product_id = products.id
+    ORDER BY transactions.transaction_date DESC
+  `);
+
+  // Group items by transaction_id
+  const notifications = {};
+  result.rows.forEach(row => {
+    if (!notifications[row.transaction_id]) {
+      notifications[row.transaction_id] = {
+        transactionId: row.transaction_id,
+        createdBy: row.created_by,
+        createdAt: row.created_at,
+        totalAmount: row.total_amount,
+        items: [],
+      };
+    }
+    notifications[row.transaction_id].items.push({
+      product_name: row.product_name,
+      quantity: row.quantity_sold,
+      price: row.product_price,
+      total_per_product: row.total_per_product,
+    });
+  });
+
+  return Object.values(notifications);
+}
+
 module.exports = {
   getTotalOut,
   getBestProducts,
@@ -123,4 +168,5 @@ module.exports = {
   createTransaction,
   processTransactionItems,
   getTransStats,
+  getTransactionNotifications
 };

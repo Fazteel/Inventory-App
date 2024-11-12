@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware'); 
+const checkPermissions = require("../middleware/checkPermissions");
 const {
   getUsers,
   createUser,
@@ -7,16 +9,15 @@ const {
   deleteUser,
   checkEmail,
 } = require('../controllers/userController');
-const authMiddleware = require('../middleware/authMiddleware'); // Middleware untuk autentikasi
 
 // Protect routes with authentication
 router.use(authMiddleware);
 
 // Routes
-router.get('/', getUsers); 
-router.post('/add', createUser);
-router.get('/check-email', checkEmail);
-router.put('/update/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.get('/', checkPermissions('read:users'), getUsers); 
+router.post('/add', checkPermissions('create:users'), createUser);
+router.get('/check-email', checkPermissions('create:users'), checkEmail);
+router.put('/update/:id', checkPermissions('update:users'), updateUser);
+router.delete('/:id', checkPermissions('delete:users'), deleteUser);
 
 module.exports = router;

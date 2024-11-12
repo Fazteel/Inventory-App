@@ -7,10 +7,14 @@ const {
   bestProducts,
   getTransactions,
   createTransaction,
-  getTransactionsStats
+  getTransactionsStats,
+  transactionNotifications
 } = require("../controllers/transactionController");
 
 router.use(authMiddleware);
+
+//Notification
+router.get("/notifications", checkPermissions('reports:transactions'), transactionNotifications);
 
 //Transaction Information
 router.get("/total-out", checkPermissions('read:transactions'), totalOut);

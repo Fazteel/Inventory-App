@@ -5,6 +5,7 @@ const {
   createTransaction,
   processTransactionItems,
   getTransStats,
+  getTransactionNotifications
 } = require("../models/transactionModel");
 const { pool } = require("../db");
 
@@ -92,5 +93,15 @@ exports.createTransaction = async (req, res) => {
     res.status(400).json({ error: err.message });
   } finally {
     client.release();
+  }
+};
+
+exports.transactionNotifications = async (req, res) => {
+  try {
+    const notifications = await getTransactionNotifications();
+    res.json(notifications);
+  } catch (error) {
+    console.error("Error fetching transaction notifications:", error);
+    res.status(500).json({ error: "Error fetching transaction notifications" });
   }
 };

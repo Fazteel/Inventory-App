@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { List, Skeleton, Tag, Button, Space } from 'antd';
 import {
-    WarningOutlined,
     InboxOutlined,
     PlusCircleOutlined,
     EditOutlined,
     DeleteOutlined,
     StockOutlined
 } from '@ant-design/icons';
+import { AiFillProduct } from "react-icons/ai";
 
 const ProductNotifications = () => {
     const [ loading, setLoading ] = useState(true);
@@ -53,7 +53,7 @@ const ProductNotifications = () => {
     const getNotificationIcon = (type) => {
         switch (type) {
             case 'low_stock':
-                return <WarningOutlined style={{ fontSize: '20px', color: '#ff4d4f' }} />;
+                return <AiFillProduct style={{ fontSize: '20px', color: '#ff4d4f' }} />;
             case 'new_product':
                 return <PlusCircleOutlined style={{ fontSize: '20px', color: '#52c41a' }} />;
             case 'product_updated':
@@ -122,7 +122,7 @@ const ProductNotifications = () => {
         return (
             <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center gap-2 mb-4">
-                    <WarningOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />
+                    <AiFillProduct style={{ fontSize: '24px', color: '#ff4d4f' }} />
                     <h2 className="text-lg font-semibold m-0">Notifikasi Produk</h2>
                 </div>
                 <div className="text-center py-8 text-gray-500">
@@ -135,7 +135,7 @@ const ProductNotifications = () => {
     return (
         <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center gap-2 mb-4">
-                <WarningOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />
+                <AiFillProduct style={{ fontSize: '24px', color: '#ff4d4f' }} />
                 <h2 className="text-lg font-semibold m-0">Notifikasi Produk</h2>
             </div>
 
