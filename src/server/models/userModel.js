@@ -58,15 +58,14 @@ async function checkEmail(email) {
   try {
     const result = await query("SELECT * FROM users WHERE email = $1", [email]);
     if (result.rows.length > 0) {
-      return { exists: true }; 
+      return { exists: true };
     }
-    return { exists: false };  
+    return { exists: false };
   } catch (error) {
-    console.error('Error checking email:', error); 
-    throw error;  
+    console.error("Error checking email:", error);
+    throw error;
   }
 }
-
 
 async function assignRoleToUser(userId, roleId) {
   try {
@@ -89,14 +88,17 @@ findUserByUsername = async (username) => {
 
 async function getAllUsersWithRoles(excludedUserId) {
   try {
-    const result = await query(`
+    const result = await query(
+      `
       SELECT u.id, u.username, u.email, r.name AS role_name
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
       WHERE u.id <> $1 AND u.is_deleted = false
       ORDER BY COALESCE(u.updated_at, u.created_at) DESC
-    `, [excludedUserId]);
+    `,
+      [excludedUserId]
+    );
     return result.rows;
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -106,14 +108,33 @@ async function getAllUsersWithRoles(excludedUserId) {
 
 async function getUserWithRole(userId) {
   try {
-    const result = await query(`
+    const result = await query(
+      `
       SELECT u.id, u.username, u.email, r.id as role_id, r.name as role_name
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
       WHERE u.id = $1
-    `, [userId]);
+    `,
+      [userId]
+    );
     return result.rows[0];
+  } catch (error) {
+    console.error("Error fetching user with role:", error);
+    throw error;
+  }
+}
+
+async function getUserRoleByUserId(userId) {
+  try {
+    const result = await query(
+      `SELECT r.* 
+       FROM roles r
+       JOIN user_roles ur ON ur.role_id = r.id
+       WHERE ur.user_id = $1 AND r.deleted_at IS NULL`,
+      [userId]
+    );
+    return result.rows;
   } catch (error) {
     console.error("Error fetching user with role:", error);
     throw error;
@@ -129,5 +150,6 @@ module.exports = {
   getAllUsersWithRoles,
   getUserWithRole,
   findUserByUsername,
-  checkEmail
+  checkEmail,
+  getUserRoleByUserId,
 };

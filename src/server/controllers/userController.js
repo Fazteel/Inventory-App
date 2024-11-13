@@ -9,6 +9,7 @@ const {
   getUserWithRole,
   findUserByUsername,
   checkEmail,
+  getUserRoleByUserId
 } = require("../models/userModel");
 const emailService = require("../services/emailService");
  
@@ -142,5 +143,22 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Error deleting user" });
+  }
+};
+
+exports.getUserRole = async (req, res) => {
+  try {
+    const userId = req.user.id; 
+
+    const roles = await getUserRoleByUserId(userId);
+
+    if (roles.length === 0) {
+      return res.status(404).json({ message: "User role not found" });
+    }
+
+    res.json(roles[0]);
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    res.status(500).json({ message: "Failed to fetch user role" });
   }
 };

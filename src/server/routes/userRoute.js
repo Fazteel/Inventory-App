@@ -8,11 +8,13 @@ const {
   updateUser,
   deleteUser,
   checkEmail,
+  getUserRole
 } = require('../controllers/userController');
 
 // Protect routes with authentication
 router.use(authMiddleware);
 
+router.get('/me/role', checkPermissions('read:users'), getUserRole); 
 // Routes
 router.get('/', checkPermissions('read:users'), getUsers); 
 router.post('/add', checkPermissions('create:users'), createUser);

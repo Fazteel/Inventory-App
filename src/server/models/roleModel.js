@@ -17,6 +17,22 @@ async function getAllRoles(excludeAdmin = false) {
   }
 }
 
+async function getUserRole(userId) {
+  try {
+    const result = await query(
+      `SELECT r.* 
+       FROM roles r
+       JOIN user_roles ur ON ur.role_id = r.id
+       WHERE ur.user_id = $1 AND r.deleted_at IS NULL`,
+      [userId]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    throw error;
+  }
+}
+
 async function createNewRole(name, permissions) {
   try {
     const roleResult = await query(
@@ -116,7 +132,7 @@ async function getPermissionsByRoleId(roleId) {
        WHERE rp.role_id = $1`,
       [roleId]
     );
-    return result.rows.map((row) => row.name); // Return an array of permission names
+    return result.rows.map((row) => row.name); 
   } catch (error) {
     console.error("Error fetching permissions by role ID:", error);
     throw error;
@@ -125,6 +141,7 @@ async function getPermissionsByRoleId(roleId) {
 
 module.exports = {
   getAllRoles,
+  getUserRole,
   createNewRole,
   updateExistingRole,
   softDeleteRole,

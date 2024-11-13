@@ -4,16 +4,48 @@ import { EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-desi
 import axios from 'axios';
 import AddRole from './AddRole';
 import EditRole from './EditRole';
+import { useAuth } from '../../server/contexts/authContext'; // Asumsikan Anda memiliki context untuk auth
 
 const RolesTable = () => {
+  const { user } = useAuth();
   const [ roles, setRoles ] = useState([]);
   const [ loading, setLoading ] = useState(true);
   const [ selectedRole, setSelectedRole ] = useState(null);
   const [ isEditModalVisible, setIsEditModalVisible ] = useState(false);
+  const [ userRole, setUserRole ] = useState(null);
 
   useEffect(() => {
-    fetchRoles();
+    const initializeData = async () => {
+      await Promise.all([ fetchUserRole(), fetchRoles() ]);
+    };
+
+    initializeData();
   }, []);
+
+  const fetchUserRole = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      const response = await axios.get('http://localhost:5000/api/users/me/role', {
+        headers: {
+          Authorization: `Bearer ${token}` // Pastikan format token sesuai dengan yang diharapkan backend
+        },
+      });
+
+      setUserRole(response.data);
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      if (error.response?.status === 404) {
+        message.warning('User role not found');
+      } else {
+        message.error('Failed to fetch user role');
+      }
+    }
+  };
 
   const fetchRoles = async () => {
     setLoading(true);
@@ -23,7 +55,7 @@ const RolesTable = () => {
           Authorization: localStorage.getItem("token"),
         },
       });
-      
+
       // Mengurutkan data dengan admin selalu di atas
       const sortedRoles = response.data.sort((a, b) => {
         if (a.id === 1) return -1; // admin ke atas
@@ -31,7 +63,7 @@ const RolesTable = () => {
         // Untuk role non-admin, urutkan berdasarkan nama
         return a.name.localeCompare(b.name);
       });
-      
+
       setRoles(sortedRoles);
     } catch (error) {
       console.error('Error fetching roles:', error);
@@ -42,6 +74,11 @@ const RolesTable = () => {
   };
 
   const handleEdit = (role) => {
+    // Cek apakah user mencoba mengedit role mereka sendiri
+    if (userRole && role.id === userRole.id) {
+      message.error("You cannot edit your own role");
+      return;
+    }
     setSelectedRole(role);
     setIsEditModalVisible(true);
   };
@@ -52,7 +89,13 @@ const RolesTable = () => {
     fetchRoles();
   };
 
-  const showDeleteConfirm = (id) => {
+  const showDeleteConfirm = (role) => {
+    // Cek apakah user mencoba menghapus role mereka sendiri
+    if (userRole && role.id === userRole.id) {
+      message.error("You cannot delete your own role");
+      return;
+    }
+
     Modal.confirm({
       title: 'Are you sure you want to delete this role?',
       icon: <ExclamationCircleFilled />,
@@ -61,7 +104,7 @@ const RolesTable = () => {
       okType: 'danger',
       cancelText: 'No',
       onOk() {
-        handleDelete(id);
+        handleDelete(role.id);
       },
       onCancel() {
         console.log('Cancel');
@@ -71,14 +114,22 @@ const RolesTable = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/roles/${id}`);
+      const response = await axios.delete(`http://localhost:5000/api/roles/${id}`, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
       if (response.data) {
         message.success('Role deleted successfully!');
         fetchRoles();
       }
     } catch (error) {
-      console.error('Error deleting role:', error);
-      message.error('Failed to delete role');
+      if (error.response?.status === 403) {
+        message.error(error.response.data.message);
+      } else {
+        console.error('Error deleting role:', error);
+        message.error('Failed to delete role');
+      }
     }
   };
 
@@ -87,6 +138,22 @@ const RolesTable = () => {
     if (a.id === 1) return -1;
     if (b.id === 1) return 1;
     return a.name.localeCompare(b.name);
+  };
+
+  // Fungsi untuk mengecek apakah tombol aksi harus dinonaktifkan
+  const isActionDisabled = (record) => {
+    return record.id === 1 || (userRole && record.id === userRole.id);
+  };
+
+  // Fungsi untuk mendapatkan tooltip message
+  const getTooltipMessage = (record) => {
+    if (record.id === 1) {
+      return "Admin role cannot be modified";
+    }
+    if (userRole && record.id === userRole.id) {
+      return "You cannot modify your own role";
+    }
+    return "";
   };
 
   const columns = [
@@ -99,33 +166,52 @@ const RolesTable = () => {
       title: 'Role Name',
       dataIndex: 'name',
       key: 'name',
-      sorter: nameColumnSorter, // Menggunakan custom sorter
-      defaultSortOrder: 'ascend', // Optional: mengurutkan secara default
+      sorter: nameColumnSorter,
+      defaultSortOrder: 'ascend',
     },
     {
       title: 'Action',
       key: 'action',
       render: (_, record) => {
-        if (record.id === 1) {
-          return null;
+        const tooltipMessage = getTooltipMessage(record);
+
+        if (isActionDisabled(record)) {
+          return (
+            <Tooltip title={tooltipMessage}>
+              <Space size="small">
+                <Button
+                  disabled
+                  color='default'
+                  variant='solid'
+                  icon={<EditOutlined />}
+                />
+                <Button
+                  disabled
+                  color='danger'
+                  variant='solid'
+                  icon={<DeleteOutlined />}
+                />
+              </Space>
+            </Tooltip>
+          );
         }
-        
+
         return (
           <Space size="small">
             <Tooltip title="Edit">
-              <Button 
-                color='default' 
-                variant='solid' 
-                icon={<EditOutlined />} 
-                onClick={() => handleEdit(record)} 
+              <Button
+                color='default'
+                variant='solid'
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
               />
             </Tooltip>
             <Tooltip title="Delete">
-              <Button 
-                color='danger' 
-                variant='solid' 
-                icon={<DeleteOutlined />} 
-                onClick={() => showDeleteConfirm(record.id)} 
+              <Button
+                color='danger'
+                variant='solid'
+                icon={<DeleteOutlined />}
+                onClick={() => showDeleteConfirm(record)}
               />
             </Tooltip>
           </Space>
