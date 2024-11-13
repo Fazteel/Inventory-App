@@ -139,6 +139,36 @@ async function getPermissionsByRoleId(roleId) {
   }
 }
 
+async function getPermissionsByUserId(userId) {
+  try {
+    // Ambil role_id dari tabel user_roles
+    const roleResult = await db.query(`
+      SELECT ur.role_id
+      FROM user_roles ur
+      WHERE ur.user_id = $1
+    `, [userId]);
+
+    if (roleResult.rows.length === 0) {
+      throw new Error('User has no assigned role');
+    }
+
+    // Ambil permissions berdasarkan role_id yang didapatkan
+    const roleId = roleResult.rows[0].role_id;
+
+    const permissionsResult = await db.query(`
+      SELECT p.name
+      FROM permissions p
+      JOIN role_permissions rp ON rp.permission_id = p.id
+      WHERE rp.role_id = $1
+    `, [roleId]);
+
+    // Mengembalikan daftar nama permissions
+    return permissionsResult.rows.map(row => row.name);
+  } catch (err) {
+    throw new Error('Error fetching permissions: ' + err.message);
+  }
+};
+
 module.exports = {
   getAllRoles,
   getUserRole,
@@ -146,4 +176,5 @@ module.exports = {
   updateExistingRole,
   softDeleteRole,
   getPermissionsByRoleId,
+  getPermissionsByUserId
 };

@@ -6,6 +6,7 @@ const {
   updateExistingRole,
   softDeleteRole,
   getPermissionsByRoleId,
+  getPermissionsByUserId
 } = require("../models/roleModel");
 
 const getUserRoleMiddleware = async (req, res, next) => {
@@ -31,9 +32,18 @@ exports.getRoles = async (req, res) => {
   }
 };
 
+exports.getPermissions = async (req, res) => {
+  const { userId } = req.body; 
+  try {
+    const permissions = await permissionsModel.getPermissionsByUserId(userId);
+    res.json({ permissions });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getRolePermissions = async (req, res) => {
   const { id } = req.params;
-
   try {
     const permissions = await getPermissionsByRoleId(id);
     res.json(permissions);

@@ -85,14 +85,14 @@ const UsersTable = () => {
   const handleDelete = async (id) => {
     try {
       if (!addedBy) {
-        message.error("User not logged in");
+        message.error("User  not logged in");
         return;
       }
       const response = await api.delete(`/${id}`, {
         data: { deletedBy: addedBy },
       });
       if (response.data) {
-        message.success("User deleted successfully!");
+        message.success("User  deleted successfully!");
         fetchUsers();
       }
     } catch (error) {
@@ -147,25 +147,14 @@ const UsersTable = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="small">
-          {/* Hanya tampilkan tombol edit dan delete jika role_id bukan 1 */}
-          {permissions.canUpdate && record.role_name !== 'Admin' && (
+          {permissions.canUpdate && (
             <Tooltip title="Edit">
-              <Button
-                color='default'
-                variant='solid'
-                icon={<EditOutlined />}
-                onClick={() => handleEdit(record)}
-              />
+              <Button color='default' variant='solid' icon={<EditOutlined />} onClick={() => handleEdit(record)} />
             </Tooltip>
           )}
-          {permissions.canDelete && record.role_name !== 'Admin' && (
+          {permissions.canDelete && (
             <Tooltip title="Delete">
-              <Button
-                color='danger'
-                variant='solid'
-                icon={<DeleteOutlined />}
-                onClick={() => showDeleteConfirm(record.id)}
-              />
+              <Button color='danger' variant='solid' icon={<DeleteOutlined />} onClick={() => showDeleteConfirm(record.id)} />
             </Tooltip>
           )}
         </Space>

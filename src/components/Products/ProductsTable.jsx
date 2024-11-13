@@ -188,7 +188,9 @@ const ProductsTable = () => {
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Typography.Title level={4}>Products</Typography.Title>
         <div className='flex gap-2'>
+          {permissions.canCreate && (
             <AddStock onProductAdded={handleStockAdded} addedBy={addedBy} />
+          )}
           {permissions.canCreate && (
             <AddProduct onProductAdded={handleProductAdded} addedBy={addedBy} />
           )}

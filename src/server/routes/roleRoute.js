@@ -8,7 +8,8 @@ const {
   createRole,
   updateRole,
   softDeleteRole,
-  getRolePermissions
+  getRolePermissions,
+  getPermissions
 } = require('../controllers/roleController');
 
 // Terapkan middleware auth untuk semua routes
@@ -16,6 +17,7 @@ router.use(authMiddleware);
 
 // routes/roleRoutes.js
 router.get('/:id/permissions', checkPermissions('read:roles'), getRolePermissions);
+router.post('/permissions', getPermissions);
 
 // Role routes
 router.get('/', checkPermissions('read:roles'), getRoles);

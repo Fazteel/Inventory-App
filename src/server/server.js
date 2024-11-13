@@ -13,20 +13,40 @@ const roleRoutes = require("./routes/roleRoute");
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://192.168.43.35:5173", // Tambahkan IP address Anda
+  // Tambahkan origin lain jika diperlukan
+].filter(Boolean); // Filter out undefined values
+
 // Cors configuration dengan opsi yang lebih lengkap
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log('Origin blocked:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
       "Content-Type", 
       "Authorization", 
       "x-requested-with",
       "Access-Control-Allow-Origin",
-      "Access-Control-Allow-Headers"
+      "Access-Control-Allow-Headers",
+      "Access-Control-Allow-Methods",
+      "Access-Control-Allow-Credentials"
     ],
     exposedHeaders: ["Authorization"],
+    optionsSuccessStatus: 200
   })
 );
 
@@ -97,9 +117,13 @@ const server = app.listen(PORT, () => {
 // Socket.IO setup (jika diperlukan)
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
+    allowedHeaders: [
+      "Content-Type", 
+      "Authorization"
+    ]
   }
 });
 
