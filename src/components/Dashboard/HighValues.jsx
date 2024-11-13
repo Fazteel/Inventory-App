@@ -24,7 +24,7 @@ const HighValues = () => {
         fetchHighValueProducts();
     }, []);
 
-    const formatCurrency = (value) => {
+    const formatRupiah = (value) => {
         return new Intl.NumberFormat({ style: 'currency', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
     };
 
@@ -44,7 +44,7 @@ const HighValues = () => {
                         <div className="flex justify-between items-center font-bold w-20">
                             <span className="text-gray-900">Rp.</span>
                             <span className="text-gray-900">
-                                {formatCurrency(item.total_sales)}
+                                {formatRupiah(item.total_sales)}
                             </span>
                         </div>
                     </List.Item>
