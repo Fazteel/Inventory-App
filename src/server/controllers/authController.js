@@ -53,9 +53,9 @@ exports.login = async (req, res) => {
       return res.status(401).json({ msg: "Password salah" });
     }
 
-    // Get user roles
+    // Get user roles and check if any role has been deleted
     const roleQuery = `
-      SELECT r.name 
+      SELECT r.name, r.deleted_at 
       FROM roles r
       INNER JOIN user_roles ur ON ur.role_id = r.id
       WHERE ur.user_id = $1
@@ -65,6 +65,13 @@ exports.login = async (req, res) => {
     if (roleResult.rows.length === 0) {
       console.log("No roles found for user:", username);
       return res.status(403).json({ msg: "User tidak memiliki role" });
+    }
+
+    // Check if any role has been deleted (deleted_at is not null)
+    const deletedRole = roleResult.rows.find((row) => row.deleted_at !== null);
+    if (deletedRole) {
+      console.log("Role has been deleted for user:", username);
+      return res.status(403).json({ msg: "User memiliki role yang sudah dihapus, tidak dapat login" });
     }
 
     const roles = roleResult.rows.map((row) => row.name);
@@ -112,7 +119,7 @@ exports.login = async (req, res) => {
         });
       }
     );
-    
+
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
@@ -165,37 +172,47 @@ exports.setFirstTimePassword = async (req, res) => {
 exports.verifyToken = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    
+
     if (!token) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         msg: "No token provided",
-        needsRelogin: true 
+        needsRelogin: true,
       });
     }
 
     try {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
+
       // Check if user still exists and is active
-      const userQuery = "SELECT * FROM users WHERE id = $1";
+      const userQuery = "SELECT * FROM users WHERE id = $1 AND is_deleted = false";
       const userResult = await query(userQuery, [decoded.user.id]);
 
       if (userResult.rows.length === 0) {
-        return res.status(401).json({ 
-          msg: "User no longer exists",
-          needsRelogin: true 
+        return res.status(401).json({
+          msg: "User has been deleted, needs to relogin",
+          needsRelogin: true,
         });
       }
 
-      // Get fresh roles and permissions
+      // Check if any role associated with the user has been deleted
       const roleQuery = `
-        SELECT r.name 
+        SELECT r.id, r.name, r.deleted_at 
         FROM roles r
         INNER JOIN user_roles ur ON ur.role_id = r.id
         WHERE ur.user_id = $1
       `;
       const roleResult = await query(roleQuery, [decoded.user.id]);
+
+      const deletedRole = roleResult.rows.find((row) => row.deleted_at !== null);
+      if (deletedRole) {
+        return res.status(403).json({
+          msg: "A role associated with the user has been deleted, needs to relogin",
+          needsRelogin: true,
+        });
+      }
+
+      // Refresh roles and permissions if no deletions are found
       const roles = roleResult.rows.map(row => row.name);
 
       const permissionQuery = `
@@ -208,7 +225,7 @@ exports.verifyToken = async (req, res) => {
       const permissionResult = await query(permissionQuery, [roles]);
       const permissions = permissionResult.rows.map(row => row.name);
 
-      // Issue a new token with fresh data
+      // Issue a new token with refreshed data
       const payload = {
         user: {
           id: decoded.user.id,
@@ -227,18 +244,16 @@ exports.verifyToken = async (req, res) => {
       });
 
     } catch (err) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         msg: "Token invalid or expired",
-        needsRelogin: true 
+        needsRelogin: true,
       });
     }
   } catch (err) {
     console.error("Token verification error:", err);
-    return res.status(500).json({ 
+    return res.status(500).json({
       msg: "Server error during verification",
-      needsRelogin: true 
+      needsRelogin: true,
     });
   }
 };
-// ... kode lainnya ...
-

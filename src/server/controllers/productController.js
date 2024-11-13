@@ -198,6 +198,27 @@ exports.getAllProducts = async (req, res) => {
 };
 
 exports.getProductStats = async (req, res) => {
+  const { filter } = req.query;  // Mengambil parameter filter dari query string
+  let dateCondition = '';
+
+  // Menentukan kondisi tanggal berdasarkan filter yang dipilih
+  switch (filter) {
+    case 'today':
+      dateCondition = "WHERE created_at >= CURRENT_DATE AND deleted_at IS NULL";
+      break;
+    case '7days':
+      dateCondition = "WHERE created_at >= CURRENT_DATE - INTERVAL '7 days' AND deleted_at IS NULL";
+      break;
+    case '30days':
+      dateCondition = "WHERE created_at >= CURRENT_DATE - INTERVAL '30 days' AND deleted_at IS NULL";
+      break;
+    case 'all':
+      dateCondition = "WHERE deleted_at IS NULL";
+      break;
+    default:
+      return res.status(400).json({ error: "Invalid filter parameter" });
+  }
+
   try {
     const result = await query(`
       WITH daily_stats AS (
@@ -206,8 +227,7 @@ exports.getProductStats = async (req, res) => {
               COUNT(*) as total_products, 
               SUM(quantity) as total_quantity_in
           FROM products 
-          WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
-            AND deleted_at IS NULL
+          ${dateCondition}
           GROUP BY DATE(created_at)
       ),
       daily_transactions AS (
@@ -216,7 +236,7 @@ exports.getProductStats = async (req, res) => {
               SUM(ti.quantity) as total_quantity_out
           FROM transactions tr
           JOIN transaction_items ti ON tr.id = ti.transaction_id
-          WHERE tr.transaction_date >= CURRENT_DATE - INTERVAL '7 days'
+          WHERE tr.transaction_date >= CURRENT_DATE - INTERVAL '30 days' -- Mengambil transaksi dalam 30 hari terakhir
           GROUP BY DATE(tr.transaction_date)
       )
       SELECT 

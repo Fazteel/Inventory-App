@@ -5,7 +5,7 @@ const {
   createTransaction,
   processTransactionItems,
   getTransStats,
-  getTransactionNotifications
+  getTransactionNotifications,
 } = require("../models/transactionModel");
 const { pool } = require("../db");
 
@@ -41,17 +41,45 @@ exports.getTransactions = async (req, res) => {
 
 exports.getTransactionsStats = async (req, res) => {
   try {
-    const result = await getTransStats()
-    if (result.rows && result.rows.length > 0) {
-      res.json(result.rows);
+    // Ambil parameter filter dari query string
+    const { filter } = req.query;
+
+    let startDate = new Date();
+    let endDate = new Date();
+
+    // Tentukan rentang tanggal berdasarkan filter yang dipilih
+    switch (filter) {
+      case 'today':
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case '7days':
+        startDate.setDate(startDate.getDate() - 7);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case '30days':
+        startDate.setDate(startDate.getDate() - 30);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      default:
+        // Jika filter tidak ada, tampilkan semua data
+        startDate = new Date('2000-01-01');  // Tanggal awal yang sangat lama
+        endDate = new Date();  // Tanggal sekarang
+    }
+
+    // Panggil model untuk mendapatkan data transaksi berdasarkan rentang tanggal
+    const result = await getTransStats(startDate, endDate);
+
+    if (result && result.length > 0) {
+      res.json(result);
     } else {
-      res.json([]); 
+      res.json([]);
     }
   } catch (error) {
     console.error('Error in getTransactionsStats:', error);
     res.status(500).json({ error: error.message });
   }
-}
+};
 
 exports.createTransaction = async (req, res) => {
   const client = await pool.connect();

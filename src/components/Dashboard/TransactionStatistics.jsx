@@ -9,17 +9,18 @@ const TransactionStatistics = () => {
     });
     const [ loading, setLoading ] = useState(true);
     const [ error, setError ] = useState(null);
+    const [ filter, setFilter ] = useState('7days'); // Default filter: 7 days
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [ filter ]); // Fetch data every time filter changes
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/transactions/transactions-stats', {
+            const response = await axios.get(`http://localhost:5000/api/transactions/transactions-stats?filter=${filter}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'application/json',
@@ -128,6 +129,10 @@ const TransactionStatistics = () => {
         };
     }, [ chartData ]);
 
+    const handleFilterChange = (e) => {
+        setFilter(e.target.value);
+    };
+
     if (loading) {
         return (
             <div className="w-full h-[400px] bg-white rounded-xl dark:bg-gray-800 flex items-center justify-center">
@@ -144,25 +149,31 @@ const TransactionStatistics = () => {
         );
     }
 
-    // Menghitung total penjualan 7 hari terakhir
     const latestTotal = chartData.series[ 0 ]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
 
     return (
         <div className="w-full h-auto bg-white shadow-md rounded-xl dark:bg-gray-800">
-            <div className="flex justify-between p-6 px-4 md:p-6 pb-2 md:pb-0">
+            <div className="flex justify-between p-3 px-4 md:p-6 pb-0 md:pb-0">
                 <div>
-                    <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">
+                    <h5 className="leading-none text-2xl font-bold text-gray-900 dark:text-white mb-2.5">
                         Rp {latestTotal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                     </h5>
-                    <p className="text-base font-normal text-gray-500 dark:text-gray-400">
+                    <p className="text-md font-normal text-gray-500 dark:text-gray-400">
                         Sales this week
                     </p>
+                </div>
+                <div>
+                    <select value={filter} onChange={handleFilterChange} className="bg-white text-gray-800 border border-gray-300 rounded-md p-1" >
+                        <option value="today">Today</option>
+                        <option value="7days">Last 7 Days</option>
+                        <option value="30days">Last 30 Days</option>
+                        <option value="all">All Data</option>
+                    </select>
                 </div>
             </div>
             <div ref={chartRef} className="px-3 py-2 bg-white rounded-xl dark:bg-gray-800" />
         </div>
     );
-
 };
 
 export default TransactionStatistics;

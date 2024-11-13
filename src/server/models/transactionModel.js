@@ -21,21 +21,22 @@ async function getBestProducts() {
   return result.rows;
 }
 
-async function getTransStats() {
+const getTransStats = async (startDate, endDate) => {
   const result = await pool.query(`
     SELECT 
-        DATE(t.transaction_date) as date,
-        SUM(t.total_amount) as total_sales
-      FROM 
-        transactions t
-      GROUP BY 
-        DATE(t.transaction_date)
-      ORDER BY 
-        date DESC
-      LIMIT 7
-  `);
-  return result;
-}
+      DATE(t.transaction_date) as date,
+      SUM(t.total_amount) as total_sales
+    FROM 
+      transactions t
+    WHERE t.transaction_date BETWEEN $1 AND $2
+    GROUP BY 
+      DATE(t.transaction_date)
+    ORDER BY 
+      date DESC
+  `, [startDate, endDate]);
+
+  return result.rows;  // Mengembalikan data hasil query
+};
 
 // Mendapatkan semua transaksi
 async function getAllTransactions() {
@@ -83,12 +84,12 @@ async function createTransaction(client, userId, totalAmount) {
 // Memproses item transaksi
 async function processTransactionItems(client, transactionId, items) {
   for (const item of items) {
-    console.log('Processing item:', item);
-    
+    console.log("Processing item:", item);
+
     // Cek stok
     const stockResult = await client.query(
       "SELECT id, quantity FROM products WHERE id = $1 FOR UPDATE",
-      [item.product_id]  
+      [item.product_id]
     );
 
     if (!stockResult.rows[0]) {
@@ -96,7 +97,7 @@ async function processTransactionItems(client, transactionId, items) {
     }
 
     const product = stockResult.rows[0];
-    
+
     if (product.quantity < item.quantity) {
       throw new Error(`Insufficient stock for product ${item.product_name}`);
     }
@@ -140,7 +141,7 @@ async function getTransactionNotifications() {
 
   // Group items by transaction_id
   const notifications = {};
-  result.rows.forEach(row => {
+  result.rows.forEach((row) => {
     if (!notifications[row.transaction_id]) {
       notifications[row.transaction_id] = {
         transactionId: row.transaction_id,
@@ -168,5 +169,5 @@ module.exports = {
   createTransaction,
   processTransactionItems,
   getTransStats,
-  getTransactionNotifications
+  getTransactionNotifications,
 };

@@ -3,23 +3,27 @@ import ApexCharts from 'apexcharts';
 import axios from 'axios';
 
 const ProductStatistics = () => {
-    const [chartData, setChartData] = useState({
+    const [ chartData, setChartData ] = useState({
         categories: [],
         series: []
     });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [ loading, setLoading ] = useState(true);
+    const [ error, setError ] = useState(null);
+    const [ filter, setFilter ] = useState('7days');  // Default filter is '7days'
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [ filter ]);  // Re-fetch data when filter changes
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/products/products-stats', {
+            const response = await axios.get(`http://localhost:5000/api/products/products-stats`, {
+                params: {
+                    filter: filter  // Send the filter to the backend
+                },
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                     'Content-Type': 'application/json',
@@ -35,7 +39,7 @@ const ProductStatistics = () => {
             }
 
             // Sort data by date
-            const sortedData = [...data].sort((a, b) => {
+            const sortedData = [ ...data ].sort((a, b) => {
                 const dateA = new Date(a.date);
                 const dateB = new Date(b.date);
                 return dateA - dateB;
@@ -122,7 +126,7 @@ const ProductStatistics = () => {
                     curve: 'smooth',
                     width: 3
                 },
-                colors: ['#3B82F6', '#10B981', '#EF4444'], 
+                colors: [ '#3B82F6', '#10B981', '#EF4444' ],
                 tooltip: {
                     theme: 'dark',
                     x: {
@@ -145,7 +149,15 @@ const ProductStatistics = () => {
                 chartInstance.current.destroy();
             }
         };
-    }, [chartData]);
+    }, [ chartData ]);
+
+    const handleFilterChange = (event) => {
+        setFilter(event.target.value);
+    };
+
+    const latestProducts = chartData.series[ 0 ]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
+    const latestQuantityIn = chartData.series[ 1 ]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
+    const latestQuantityOut = chartData.series[ 2 ]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
 
     if (loading) {
         return (
@@ -163,31 +175,24 @@ const ProductStatistics = () => {
         );
     }
 
-    const latestProducts = chartData.series[0]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
-    const latestQuantityIn = chartData.series[1]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
-    const latestQuantityOut = chartData.series[2]?.data.reduce((acc, currentValue) => acc + currentValue, 0) || 0;
-    
     return (
         <div className="w-full h-auto bg-white shadow-md rounded-xl dark:bg-gray-800">
             <div className="flex justify-between p-4 md:p-6 pb-0 md:pb-0">
                 <div className="flex justify-between w-full px-2">
-                    <div>
-                        <h5 className="leading-none text-2xl font-bold text-gray-900 dark:text-white pb-2">
-                            {latestProducts.toLocaleString()}
-                        </h5>
-                        <p className="text-md font-normal text-gray-500 dark:text-gray-400">
-                            Total Products
-                        </p>
-                        <p className="text-xs font-normal text-gray-500 dark:text-gray-400">
-                            (All Data in 30 Days)
-                        </p>
-                    </div>
                     <div className='flex gap-4'>
+                        <div>
+                            <h5 className="leading-none text-2xl font-bold text-blue-500 dark:text-white pb-2">
+                                {latestProducts.toLocaleString()}
+                            </h5>
+                            <p className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                                Products
+                            </p>
+                        </div>
                         <div>
                             <h5 className="leading-none text-2xl font-bold text-emerald-500 pb-2">
                                 {latestQuantityIn.toLocaleString()}
                             </h5>
-                            <p className="text-md font-normal text-gray-500 dark:text-gray-400">
+                            <p className="text-xs font-normal text-gray-500 dark:text-gray-400">
                                 Stock In
                             </p>
                         </div>
@@ -195,10 +200,18 @@ const ProductStatistics = () => {
                             <h5 className="leading-none text-2xl font-bold text-red-500 pb-2">
                                 {latestQuantityOut.toLocaleString()}
                             </h5>
-                            <p className="text-md font-normal text-gray-500 dark:text-gray-400">
+                            <p className="text-xs font-normal text-gray-500 dark:text-gray-400">
                                 Stock Out
                             </p>
                         </div>
+                    </div>
+                    <div>
+                        <select value={filter} onChange={handleFilterChange} className="bg-white text-gray-800 border border-gray-300 rounded-md p-1" >
+                            <option value="today">Today</option>
+                            <option value="7days">Last 7 Days</option>
+                            <option value="30days">Last 30 Days</option>
+                            <option value="all">All Data</option>
+                        </select>
                     </div>
                 </div>
             </div>
