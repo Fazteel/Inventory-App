@@ -178,6 +178,9 @@ const ProductStatistics = () => {
                         <p className="text-md font-normal text-gray-500 dark:text-gray-400">
                             Total Products
                         </p>
+                        <p className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                            (All Data in 30 Days)
+                        </p>
                     </div>
                     <div className='flex gap-4'>
                         <div>

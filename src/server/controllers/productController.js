@@ -59,7 +59,6 @@ exports.getHighValueProducts = async (req, res) => {
 
 exports.getProductsNotifications = async (req, res) => {
   try {
-    // Ambil notifikasi untuk produk baru
     const newProducts = await query(`
       SELECT 
         id, 
@@ -152,7 +151,17 @@ exports.getProductsNotifications = async (req, res) => {
       })),
     ];
 
-    res.json(notifications);
+    const sortedNotifications = notifications.sort((a, b) => {
+      // Ambil waktu yang valid untuk masing-masing notifikasi (createdAt, updatedAt, deletedAt, atau dateAdded)
+      const dateA = new Date(a.details.createdAt || a.details.updatedAt || a.details.deletedAt || a.details.dateAdded);
+      const dateB = new Date(b.details.createdAt || b.details.updatedAt || b.details.deletedAt || b.details.dateAdded);
+    
+      // Urutkan berdasarkan waktu terbaru
+      return dateB - dateA;
+    });
+    
+    // Kirim data yang sudah diurutkan
+    res.json(sortedNotifications);          
   } catch (err) {
     console.error("Error fetching product notifications:", err);
     res.status(500).json({
@@ -197,7 +206,8 @@ exports.getProductStats = async (req, res) => {
               COUNT(*) as total_products, 
               SUM(quantity) as total_quantity_in
           FROM products 
-          WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+          WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+            AND deleted_at IS NULL
           GROUP BY DATE(created_at)
       ),
       daily_transactions AS (
@@ -206,7 +216,7 @@ exports.getProductStats = async (req, res) => {
               SUM(ti.quantity) as total_quantity_out
           FROM transactions tr
           JOIN transaction_items ti ON tr.id = ti.transaction_id
-          WHERE tr.transaction_date >= CURRENT_DATE - INTERVAL '30 days'
+          WHERE tr.transaction_date >= CURRENT_DATE - INTERVAL '7 days'
           GROUP BY DATE(tr.transaction_date)
       )
       SELECT 
@@ -216,7 +226,7 @@ exports.getProductStats = async (req, res) => {
           COALESCE(dt.total_quantity_out, 0) as total_quantity_out
       FROM daily_stats ds
       LEFT JOIN daily_transactions dt ON ds.date = dt.date
-      ORDER BY ds.date DESC
+      ORDER BY ds.date DESC;
     `);
     res.json(result.rows);
   } catch (error) {
@@ -226,8 +236,8 @@ exports.getProductStats = async (req, res) => {
 };
 
 exports.addProduct = async (req, res) => {
-  const { name, description, price, quantity, supplier_id, added_by } =
-    req.body;
+  const { name, description, price, supplier_id, added_by } = req.body;
+  const quantity = 0; // Set default quantity ke 0
 
   try {
     const client = await connect();
@@ -235,18 +245,44 @@ exports.addProduct = async (req, res) => {
     try {
       await client.query("BEGIN");
 
+      // Insert ke tabel products dengan quantity default 0
       const productResult = await client.query(
-        "INSERT INTO products (name, description, price, quantity, supplier_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *",
+        `INSERT INTO products (
+          name, 
+          description, 
+          price, 
+          quantity, 
+          supplier_id, 
+          created_at, 
+          updated_at
+        ) 
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) 
+        RETURNING *`,
         [name, description, price, quantity, supplier_id]
       );
 
+      // Insert ke tabel inventory_additions dengan quantity default 0
       await client.query(
-        "INSERT INTO inventory_additions (product_id, supplier_id, quantity, date_added, added_by) VALUES ($1, $2, $3, NOW(), $4)",
+        `INSERT INTO inventory_additions (
+          product_id, 
+          supplier_id, 
+          quantity, 
+          date_added, 
+          added_by
+        ) 
+        VALUES ($1, $2, $3, NOW(), $4)`,
         [productResult.rows[0].id, supplier_id, quantity, added_by]
       );
 
       await client.query("COMMIT");
-      res.status(201).json(productResult.rows[0]);
+      
+      // Mengembalikan data produk yang baru ditambahkan
+      res.status(201).json({
+        status: 'success',
+        data: productResult.rows[0],
+        message: 'Product added successfully with initial quantity 0'
+      });
+
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;
@@ -255,9 +291,11 @@ exports.addProduct = async (req, res) => {
     }
   } catch (err) {
     console.error("Error adding product:", err);
-    res
-      .status(500)
-      .json({ error: "Error adding product", message: err.message });
+    res.status(500).json({ 
+      status: 'error',
+      error: "Error adding product", 
+      message: err.message 
+    });
   }
 };
 

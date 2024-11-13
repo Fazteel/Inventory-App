@@ -79,16 +79,12 @@ const AddProduct = ({ onProductAdded, addedBy }) => {
             <Modal title="Create New Product" open={isModalVisible} onCancel={handleCancel} footer={null} style={{ top: 20 }} >
                 <Form layout="vertical" onFinish={handleAdd} initialValues={{ added_by: addedBy }} >
                     <Form.Item label="Name" name="name" rules={[ { required: true, message: 'Please input the product name!' } ]} className='mb-2.5'>
-                        <Input/>
+                        <Input />
                     </Form.Item>
 
-                    <Form.Item label="Price" name="price" rules={[ { required: true, message: 'Please input the product price!' } ]} className='mb-2.5'>
-                        <Input prefix='Rp' />
-                    </Form.Item>
-
-                    <Form.Item label="Quantity" name="quantity" rules={[ { required: true, message: 'Please input the product quantity!' } ]}
+                    <Form.Item label="Price" name="price" rules={[ { required: true, message: 'Please input the product price!' } ]} className='mb-2.5'
                         style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginBottom: '8px', marginRight: '12px' }} >
-                        <Input type="number" min={1} />
+                        <Input prefix='Rp' />
                     </Form.Item>
 
                     <Form.Item label="Supplier" name="supplier_id" rules={[ { required: true, message: 'Please select a supplier!' } ]}
@@ -103,7 +99,7 @@ const AddProduct = ({ onProductAdded, addedBy }) => {
                     </Form.Item>
 
                     <Form.Item label="Product Description" name="description">
-                        <Input.TextArea rows={4}/>
+                        <Input.TextArea rows={4} />
                     </Form.Item>
 
                     <Form.Item>

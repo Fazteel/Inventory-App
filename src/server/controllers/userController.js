@@ -2,9 +2,11 @@ const bcrypt = require("bcryptjs");
 const {
   createUser,
   updateUser,
+  updateUserRole,
   deleteUser,
   assignRoleToUser ,
   getAllUsersWithRoles,
+  getUserWithRole,
   findUserByUsername,
   checkEmail,
 } = require("../models/userModel");
@@ -99,9 +101,20 @@ exports.getUsers = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
-    const updatedUser = await updateUser(id, updates);
-    res.json(updatedUser);
+    const { username, email, role_id } = req.body;
+    
+    // Update user basic info
+    const updatedUser = await updateUser(id, { username, email });
+    
+    // Update user role if provided
+    if (role_id) {
+      await updateUserRole(id, role_id);
+    }
+    
+    // Fetch updated user with role
+    const userWithRole = await getUserWithRole(id);
+    
+    res.json(userWithRole);
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ message: "Error updating user." });

@@ -70,7 +70,6 @@ const EditProduct = ({ visible, onClose, product, suppliers, onUpdate, addedBy }
                 <Form.Item label="Product Description" name="description">
                     <Input.TextArea rows={4} />
                 </Form.Item>
-
             </Form>
         </Modal>
     );

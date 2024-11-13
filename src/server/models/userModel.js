@@ -16,7 +16,7 @@ async function createUser(username, password, email) {
 async function updateUser(id, updates) {
   try {
     const result = await query(
-      "UPDATE users SET username = $1, email = $2 WHERE id = $3 RETURNING *",
+      "UPDATE users SET username = $1, email = $2, updated_at = NOW()  WHERE id = $3 RETURNING *",
       [updates.username, updates.email, id]
     );
     return result.rows[0];
@@ -26,10 +26,25 @@ async function updateUser(id, updates) {
   }
 }
 
+async function updateUserRole(userId, roleId) {
+  try {
+    // Delete existing role
+    await query("DELETE FROM user_roles WHERE user_id = $1", [userId]);
+    // Assign new role
+    await query("INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)", [
+      userId,
+      roleId,
+    ]);
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    throw error;
+  }
+}
+
 async function deleteUser(id, deletedBy) {
   try {
     const result = await query(
-      "UPDATE users SET is_deleted = true, deleted_by = $2 WHERE id = $1 RETURNING *",
+      "UPDATE users SET is_deleted = true, deleted_by = $2, updated_at = NOW() WHERE id = $1 RETURNING *",
       [id, deletedBy]
     );
     return result.rows[0];
@@ -80,6 +95,7 @@ async function getAllUsersWithRoles(excludedUserId) {
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
       WHERE u.id <> $1 AND u.is_deleted = false
+      ORDER BY COALESCE(u.updated_at, u.created_at) DESC
     `, [excludedUserId]);
     return result.rows;
   } catch (error) {
@@ -88,12 +104,30 @@ async function getAllUsersWithRoles(excludedUserId) {
   }
 }
 
+async function getUserWithRole(userId) {
+  try {
+    const result = await query(`
+      SELECT u.id, u.username, u.email, r.id as role_id, r.name as role_name
+      FROM users u
+      LEFT JOIN user_roles ur ON u.id = ur.user_id
+      LEFT JOIN roles r ON ur.role_id = r.id
+      WHERE u.id = $1
+    `, [userId]);
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error fetching user with role:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   createUser,
   updateUser,
+  updateUserRole,
   deleteUser,
   assignRoleToUser,
   getAllUsersWithRoles,
+  getUserWithRole,
   findUserByUsername,
   checkEmail
 };

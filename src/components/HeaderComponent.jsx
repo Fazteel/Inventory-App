@@ -62,7 +62,7 @@ const HeaderComponent = ({ collapsed, setCollapsed, colorBgContainer }) => {
         />
         <div className='flex items-center mr-6'>
           <Dropdown menu={{ items }} placement="bottomRight" trigger={[ 'click' ]} >
-            <Avatar src={ProfileImage} size={30} icon={<AntDesignOutlined />} className='cursor-pointer'/>
+            <Avatar size={30} icon={<AntDesignOutlined />} className='cursor-pointer'/>
           </Dropdown>
         </div>
       </div>
