@@ -13,8 +13,8 @@ const ProductNotifications = () => {
     const [ loading, setLoading ] = useState(true);
     const [ notifications, setNotifications ] = useState([]);
     const [ page, setPage ] = useState(1);
-    const [ allLoaded, setAllLoaded ] = useState(false); // State untuk melacak apakah semua notifikasi sudah dimuat
-    const pageSize = 4;
+    const [ allLoaded, setAllLoaded ] = useState(false);
+    const pageSize = 5;
 
     const fetchNotifications = async () => {
         try {
@@ -31,11 +31,10 @@ const ProductNotifications = () => {
 
             const data = await response.json();
 
-            // Mengurutkan notifikasi berdasarkan waktu (dari yang terbaru)
             const sortedData = data.sort((a, b) => {
                 const dateA = new Date(a.details.createdAt || a.details.updatedAt || a.details.deletedAt);
                 const dateB = new Date(b.details.createdAt || b.details.updatedAt || b.details.deletedAt);
-                return dateB - dateA; // Urutkan dari yang terbaru ke yang terlama
+                return dateB - dateA; 
             });
 
             setNotifications(sortedData);
@@ -174,23 +173,19 @@ const ProductNotifications = () => {
                                     }
                                     description={
                                         <div className="text-sm text-gray-500">
-                                            {item.type === 'low_stock' && (
-                                                <p className="m-0">Supplier: {item.details.supplier}</p>
-                                            )}
-                                            <p className="m-0 mt-1">{item.message}</p>
                                             {item.details.createdAt && (
                                                 <p className="m-0 text-xs text-gray-400">
-                                                    Dibuat pada: {new Date(item.details.createdAt).toLocaleString()}
+                                                    Dibuat pada: {item.details.createdAt}
                                                 </p>
                                             )}
                                             {item.details.updatedAt && (
                                                 <p className="m-0 text-xs text-gray-400">
-                                                    Diperbarui pada: {new Date(item.details.updatedAt).toLocaleString()}
+                                                    Diperbarui pada: {item.details.updatedAt}
                                                 </p>
                                             )}
                                             {item.details.deletedAt && (
                                                 <p className="m-0 text-xs text-gray-400">
-                                                    Dihapus pada: {new Date(item.details.deletedAt).toLocaleString()}
+                                                    Dihapus pada: {item.details.deletedAt}
                                                 </p>
                                             )}
                                         </div>

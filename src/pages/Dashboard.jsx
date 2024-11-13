@@ -5,8 +5,6 @@ import HighValues from '../components/Dashboard/HighValues';
 import BestProducts from '../components/Dashboard/BestProducts';
 import ProductStatistics from '../components/Dashboard/ProductStatistics';
 import TransactionStatistics from '../components/Dashboard/TransactionStatistics';
-import ProductNotifications from '../components/Reports/ProductNotifications';
-import TransactionNotifications from '../components/Reports/TransactionNotifications';
 import { useAuth } from '../server/contexts/authContext';
 
 const Dashboard = () => {
@@ -36,14 +34,6 @@ const Dashboard = () => {
                 </Col>
                 <Col xs={24} md={12}>
                     {hasPermission('read:transactions') && <TransactionStatistics />}
-                </Col>
-            </Row>
-            <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
-                <Col xs={24} md={12}>
-                    {hasPermission('reports:products') && <ProductNotifications />}
-                </Col>
-                <Col xs={24} md={12}>
-                    {hasPermission('reports:transactions') && <TransactionNotifications />}
                 </Col>
             </Row>
         </div>
