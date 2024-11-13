@@ -94,14 +94,7 @@ const AddRole = ({ onRoleAdded, addedBy }) => {
         Add Role
       </Button>
 
-      <Modal
-        title="Create New Role"
-        open={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-        maskClosable={false}
-        style={{ top: 20 }}
-      >
+      <Modal title="Create New Role" open={isModalVisible} onCancel={handleCancel} footer={null} maskClosable={false} style={{ top: 20 }} >
         <Form
           layout="vertical"
           form={form}

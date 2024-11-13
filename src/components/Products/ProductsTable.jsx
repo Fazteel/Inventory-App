@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Space, Typography, message, Modal, Button, Tooltip } from 'antd';
+import { Table, Space, Typography, message, Modal, Button, Tooltip, Input } from 'antd';
 import { ExclamationCircleFilled, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import AddProduct from './AddProduct';
@@ -8,32 +8,69 @@ import EditProduct from './EditProduct';
 import ProductDetails from './ProductDetails';
 
 const ProductsTable = () => {
-  const [ products, setProducts ] = useState([]);
-  const [ suppliers, setSuppliers ] = useState([]);
-  const [ loading, setLoading ] = useState(true);
-  const [ editingProduct, setEditingProduct ] = useState(null);
-  const [ detailsVisible, setDetailsVisible ] = useState(false);
-  const [ selectedProduct, setSelectedProduct ] = useState(null);
-  const [ addedBy, setAddedBy ] = useState(null);
-  const [ permissions, setPermissions ] = useState({
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [addedBy, setAddedBy] = useState(null);
+  const [permissions, setPermissions] = useState({
     canCreate: false,
     canUpdate: false,
     canDelete: false
   });
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    if (userInfo && userInfo.id) {
-      setAddedBy(userInfo.id);
-      setPermissions({
-        canCreate: userInfo.permissions.includes('create:products'),
-        canUpdate: userInfo.permissions.includes('update:products'),
-        canDelete: userInfo.permissions.includes('delete:products')
-      });
+    const fetchPermissions = async () => {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      if (userInfo && userInfo.id) {
+        setAddedBy(userInfo.id);
+        try {
+          const response = await axios.post('http://localhost:5000/api/roles/permissions', {
+            userId: userInfo.id,
+          });
+          const canCreateProducts = response.data.permissions.includes('create:products');
+          const canUpdateProducts = response.data.permissions.includes('update:products');
+          const canDeleteProducts = response.data.permissions.includes('delete:products');
+          setPermissions({
+            canCreate: canCreateProducts,
+            canUpdate: canUpdateProducts,
+            canDelete: canDeleteProducts
+          });
+        } catch (error) {
+          console.error('Error fetching permissions:', error);
+        }
+      }
+      fetchProducts();
+      fetchSuppliers();
     }
-    fetchProducts();
-    fetchSuppliers();
+    fetchPermissions();
   }, []);
+
+  // Add new useEffect for handling search filtering
+  useEffect(() => {
+    handleSearch(searchQuery);
+  }, [searchQuery, products]);
+
+  const handleSearch = (value) => {
+    const query = value.toLowerCase();
+    const filtered = products.filter(product => 
+      product.name.toLowerCase().includes(query) ||
+      product.supplier_name.toLowerCase().includes(query) ||
+      product.price.toString().includes(query) ||
+      product.quantity.toString().includes(query)
+    );
+    setFilteredProducts(filtered);
+  };
+
+  // Update the onSearch handler for the Search component
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -44,6 +81,7 @@ const ProductsTable = () => {
         },
       });
       setProducts(response.data);
+      setFilteredProducts(response.data); // Initialize filtered products with all products
     } catch (error) {
       console.error('Error fetching products:', error);
       message.error('Failed to fetch products');
@@ -129,7 +167,7 @@ const ProductsTable = () => {
       maximumFractionDigits: 0
     }).format(value);
   };
-  
+
   const columns = [
     {
       title: 'No',
@@ -185,8 +223,17 @@ const ProductsTable = () => {
 
   return (
     <div className='p-3'>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Typography.Title level={4}>Products</Typography.Title>
+      <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'space-between' }} className='items-end'>
+        <div>
+          <Typography.Title level={4}>Products</Typography.Title>
+          <Input.Search
+            placeholder="Search products..."
+            allowClear
+            onChange={handleSearchChange}
+            style={{ width: 300 }}
+            value={searchQuery}
+          />
+        </div>
         <div className='flex gap-2'>
           {permissions.canCreate && (
             <AddStock onProductAdded={handleStockAdded} addedBy={addedBy} />
@@ -199,7 +246,7 @@ const ProductsTable = () => {
       <Table
         loading={loading}
         columns={columns}
-        dataSource={products}
+        dataSource={filteredProducts}
         rowKey="id"
         pagination={{ pageSize: 5 }}
       />

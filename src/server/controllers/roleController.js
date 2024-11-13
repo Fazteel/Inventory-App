@@ -33,11 +33,12 @@ exports.getRoles = async (req, res) => {
 };
 
 exports.getPermissions = async (req, res) => {
-  const { userId } = req.body; 
+  const { userId } = req.body;
   try {
-    const permissions = await permissionsModel.getPermissionsByUserId(userId);
+    const permissions = await getPermissionsByUserId(userId);
     res.json({ permissions });
   } catch (error) {
+    console.error("Error fetching permissions:", error);  // Log the error for better visibility
     res.status(500).json({ error: error.message });
   }
 };

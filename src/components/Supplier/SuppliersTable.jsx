@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Space, Typography, message, Modal, Button, Tooltip } from 'antd';
+import { Table, Space, Typography, message, Modal, Button, Tooltip, Input } from 'antd';
 import { ExclamationCircleFilled, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import AddSupplier from './AddSupplier';
@@ -9,6 +9,8 @@ import SupplierDetails from './SupplierDetails';
 const SuppliersTable = () => {
   const [ suppliers, setSuppliers ] = useState([]);
   const [ loading, setLoading ] = useState(true);
+  const [ filteredSuppliers, setFilteredSuppliers ] = useState([]);
+  const [ searchQuery, setSearchQuery ] = useState('');
   const [ editingSupplier, setEditingSupplier ] = useState(null);
   const [ detailsVisible, setDetailsVisible ] = useState(false);
   const [ selectedSupplier, setSelectedSupplier ] = useState(null);
@@ -20,23 +22,57 @@ const SuppliersTable = () => {
   })
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    if (userInfo && userInfo.id) {
-      setAddedBy(userInfo.id);
-      setPermissions({
-        canCreate: userInfo.permissions.includes('create:suppliers'),
-        canUpdate: userInfo.permissions.includes('update:suppliers'),
-        canDelete: userInfo.permissions.includes('delete:suppliers')
-      })
+    const fetchPermissions = async () => {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      if (userInfo && userInfo.id) {
+        setAddedBy(userInfo.id);
+        try {
+          const response = await axios.post('http://localhost:5000/api/roles/permissions', {
+            userId: userInfo.id,
+          });
+          const canCreateSuppliers = response.data.permissions.includes('create:suppliers');
+          const canUpdateSuppliers = response.data.permissions.includes('update:suppliers');
+          const canDeleteSuppliers = response.data.permissions.includes('delete:suppliers');
+          setPermissions({
+            canCreate: canCreateSuppliers,
+            canUpdate: canUpdateSuppliers,
+            canDelete: canDeleteSuppliers
+          });
+        } catch (error) {
+          console.error('Error fetching permissions:', error);
+        }
+      }
+      fetchSuppliers();
     }
-    fetchSuppliers();
+    fetchPermissions();
   }, []);
+
+  useEffect(() => {
+    handleSearch(searchQuery);
+  }, [ searchQuery, suppliers ]);
+
+  const handleSearch = (value) => {
+    const query = value.toLowerCase();
+    const filtered = suppliers.filter(supplier =>
+      supplier.name.toLowerCase().includes(query) ||
+      supplier.phone.toLowerCase().includes(query) ||
+      supplier.email.toString().includes(query) ||
+      supplier.address.toString().includes(query)
+    );
+    setFilteredSuppliers(filtered);
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+  };
 
   const fetchSuppliers = async () => {
     setLoading(true);
     try {
       const response = await axios.get('http://localhost:5000/api/suppliers');
       setSuppliers(response.data);
+      setFilteredSuppliers(response.data);
     } catch (error) {
       console.error('Error fetching suppliers:', error);
       message.error('Failed to fetch suppliers');
@@ -157,8 +193,17 @@ const SuppliersTable = () => {
 
   return (
     <div className='p-3'>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Typography.Title level={4}>Suppliers</Typography.Title>
+      <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'space-between' }} className='items-end'>
+        <div>
+          <Typography.Title level={4}>Suppliers</Typography.Title>
+          <Input.Search
+            placeholder="Search suppliers..."
+            allowClear
+            onChange={handleSearchChange}
+            style={{ width: 300 }}
+            value={searchQuery}
+          />
+        </div>
         {permissions.canCreate && (
           <AddSupplier onSupplierAdded={handleSupplierAdded} />
         )}
@@ -166,7 +211,7 @@ const SuppliersTable = () => {
       <Table
         loading={loading}
         columns={columns}
-        dataSource={suppliers}
+        dataSource={filteredSuppliers}
         onChange={onChange}
         rowKey="id"
         pagination={{ pageSize: 5 }}

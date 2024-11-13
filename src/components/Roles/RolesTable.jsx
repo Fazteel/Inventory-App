@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Space, Typography, Button, Tooltip, Modal, message } from 'antd';
+import { Table, Space, Typography, Button, Tooltip, Modal, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import AddRole from './AddRole';
@@ -8,19 +8,39 @@ import { useAuth } from '../../server/contexts/authContext';
 
 const RolesTable = () => {
   const { user } = useAuth();
-  const [ roles, setRoles ] = useState([]);
-  const [ loading, setLoading ] = useState(true);
-  const [ selectedRole, setSelectedRole ] = useState(null);
-  const [ isEditModalVisible, setIsEditModalVisible ] = useState(false);
-  const [ userRole, setUserRole ] = useState(null);
+  const [roles, setRoles] = useState([]);
+  const [filteredRoles, setFilteredRoles] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const initializeData = async () => {
-      await Promise.all([ fetchUserRole(), fetchRoles() ]);
+      await Promise.all([fetchUserRole(), fetchRoles()]);
     };
 
     initializeData();
   }, []);
+
+  // Add new useEffect for handling search filtering
+  useEffect(() => {
+    handleSearch(searchQuery);
+  }, [searchQuery, roles]);
+
+  const handleSearch = (value) => {
+    const query = value.toLowerCase();
+    const filtered = roles.filter(role => 
+      role.name.toLowerCase().includes(query)
+    );
+    setFilteredRoles(filtered);
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+  };
 
   const fetchUserRole = async () => {
     try {
@@ -32,7 +52,7 @@ const RolesTable = () => {
 
       const response = await axios.get('http://localhost:5000/api/users/me/role', {
         headers: {
-          Authorization: `Bearer ${token}` // Pastikan format token sesuai dengan yang diharapkan backend
+          Authorization: `Bearer ${token}`
         },
       });
 
@@ -58,13 +78,13 @@ const RolesTable = () => {
 
       // Mengurutkan data dengan admin selalu di atas
       const sortedRoles = response.data.sort((a, b) => {
-        if (a.id === 1) return -1; // admin ke atas
-        if (b.id === 1) return 1;  // admin ke atas
-        // Untuk role non-admin, urutkan berdasarkan nama
+        if (a.id === 1) return -1;
+        if (b.id === 1) return 1;
         return a.name.localeCompare(b.name);
       });
 
       setRoles(sortedRoles);
+      setFilteredRoles(sortedRoles); // Initialize filtered roles with all roles
     } catch (error) {
       console.error('Error fetching roles:', error);
       message.error('Failed to fetch roles');
@@ -74,7 +94,6 @@ const RolesTable = () => {
   };
 
   const handleEdit = (role) => {
-    // Cek apakah user mencoba mengedit role mereka sendiri
     if (userRole && role.id === userRole.id) {
       message.error("You cannot edit your own role");
       return;
@@ -90,7 +109,6 @@ const RolesTable = () => {
   };
 
   const showDeleteConfirm = (role) => {
-    // Cek apakah user mencoba menghapus role mereka sendiri
     if (userRole && role.id === userRole.id) {
       message.error("You cannot delete your own role");
       return;
@@ -133,19 +151,16 @@ const RolesTable = () => {
     }
   };
 
-  // Custom sorter untuk kolom nama yang mempertahankan admin di atas
   const nameColumnSorter = (a, b) => {
     if (a.id === 1) return -1;
     if (b.id === 1) return 1;
     return a.name.localeCompare(b.name);
   };
 
-  // Fungsi untuk mengecek apakah tombol aksi harus dinonaktifkan
   const isActionDisabled = (record) => {
     return record.id === 1 || (userRole && record.id === userRole.id);
   };
 
-  // Fungsi untuk mendapatkan tooltip message
   const getTooltipMessage = (record) => {
     if (record.id === 1) {
       return "Admin role cannot be modified";
@@ -222,8 +237,17 @@ const RolesTable = () => {
 
   return (
     <div className='p-3'>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Typography.Title level={4}>Roles</Typography.Title>
+      <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'space-between' }} className='items-end'>
+        <div>
+          <Typography.Title level={4}>Roles</Typography.Title>
+          <Input.Search
+            placeholder="Search roles..."
+            allowClear
+            onChange={handleSearchChange}
+            style={{ width: 300 }}
+            value={searchQuery}
+          />
+        </div>
         <div className='flex gap-2'>
           <AddRole onRoleAdded={fetchRoles} />
         </div>
@@ -231,7 +255,7 @@ const RolesTable = () => {
       <Table
         loading={loading}
         columns={columns}
-        dataSource={roles}
+        dataSource={filteredRoles}
         rowKey="id"
         pagination={{ pageSize: 5 }}
       />

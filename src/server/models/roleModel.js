@@ -142,7 +142,7 @@ async function getPermissionsByRoleId(roleId) {
 async function getPermissionsByUserId(userId) {
   try {
     // Ambil role_id dari tabel user_roles
-    const roleResult = await db.query(`
+    const roleResult = await query(`
       SELECT ur.role_id
       FROM user_roles ur
       WHERE ur.user_id = $1
@@ -155,7 +155,7 @@ async function getPermissionsByUserId(userId) {
     // Ambil permissions berdasarkan role_id yang didapatkan
     const roleId = roleResult.rows[0].role_id;
 
-    const permissionsResult = await db.query(`
+    const permissionsResult = await query(`
       SELECT p.name
       FROM permissions p
       JOIN role_permissions rp ON rp.permission_id = p.id

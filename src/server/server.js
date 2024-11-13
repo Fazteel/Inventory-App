@@ -16,8 +16,7 @@ const app = express();
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "http://localhost:5173",
-  "http://192.168.43.35:5173", // Tambahkan IP address Anda
-  // Tambahkan origin lain jika diperlukan
+  "http://192.168.1.20:5173", // Tambahkan IP address Anda
 ].filter(Boolean); // Filter out undefined values
 
 // Cors configuration dengan opsi yang lebih lengkap

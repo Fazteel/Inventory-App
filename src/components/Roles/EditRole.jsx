@@ -94,12 +94,7 @@ const EditRole = ({ visible, role, onClose, updated_at }) => {
     };
 
     return (
-        <Modal
-            title="Edit Role"
-            open={visible}
-            onCancel={onClose}
-            footer={null}
-        >
+        <Modal title="Edit Role" open={visible} onCancel={onClose} footer={null} style={{ top: 20 }} >
             <Form form={form} layout="vertical" onFinish={handleOk}>
                 <Form.Item label="Role Name" name="role_name" rules={[ { required: true } ]}>
                     <Input placeholder="Enter role name" />
