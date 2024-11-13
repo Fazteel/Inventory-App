@@ -4,7 +4,7 @@ import RolesTable from '../components/Roles/RolesTable';
 
 const RolesManagement = () => {
   return (
-    <div className='p-3 bg-gray-200 h-[89vh]'>
+    <div className='p-3 pt-0 bg-gray-200 h-[89vh]'>
       <RolesTable />
     </div>
   );
