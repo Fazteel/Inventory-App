@@ -198,46 +198,66 @@ exports.getAllProducts = async (req, res) => {
 };
 
 exports.getProductStats = async (req, res) => {
-  const { filter } = req.query;  // Mengambil parameter filter dari query string
-  let dateCondition = '';
-
-  // Menentukan kondisi tanggal berdasarkan filter yang dipilih
-  switch (filter) {
-    case 'today':
-      dateCondition = "WHERE created_at >= CURRENT_DATE AND deleted_at IS NULL";
-      break;
-    case '7days':
-      dateCondition = "WHERE created_at >= CURRENT_DATE - INTERVAL '7 days' AND deleted_at IS NULL";
-      break;
-    case '30days':
-      dateCondition = "WHERE created_at >= CURRENT_DATE - INTERVAL '30 days' AND deleted_at IS NULL";
-      break;
-    case 'all':
-      dateCondition = "WHERE deleted_at IS NULL";
-      break;
-    default:
-      return res.status(400).json({ error: "Invalid filter parameter" });
-  }
-
   try {
+    const { filter } = req.query;
+
+    // Fungsi helper untuk mengatur waktu ke timezone WIB/UTC+7
+    const getDateInWIB = (date) => {
+      // Tambahkan 7 jam untuk WIB
+      return new Date(date.getTime() + (7 * 60 * 60 * 1000));
+    };
+
+    let startDate = getDateInWIB(new Date());
+    let endDate = getDateInWIB(new Date());
+
+    switch (filter) {
+      case 'today':
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case '7days':
+        startDate.setDate(startDate.getDate() - 7);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case '30days':
+        startDate.setDate(startDate.getDate() - 30);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      case 'all':
+        startDate = new Date('2000-01-01T00:00:00+07:00');
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid filter parameter" });
+    }
+
+    console.log('Filter:', filter);
+    console.log('Start Date:', startDate);
+    console.log('End Date:', endDate);
+
     const result = await query(`
       WITH daily_stats AS (
           SELECT 
-              DATE(created_at) as date,
+              DATE(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') as date,
               COUNT(*) as total_products, 
               SUM(quantity) as total_quantity_in
           FROM products 
-          ${dateCondition}
-          GROUP BY DATE(created_at)
+          WHERE created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta' >= $1 
+          AND created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta' <= $2
+          AND deleted_at IS NULL
+          GROUP BY DATE(created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')
       ),
       daily_transactions AS (
           SELECT 
-              DATE(tr.transaction_date) as date,
+              DATE(tr.transaction_date AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta') as date,
               SUM(ti.quantity) as total_quantity_out
           FROM transactions tr
           JOIN transaction_items ti ON tr.id = ti.transaction_id
-          WHERE tr.transaction_date >= CURRENT_DATE - INTERVAL '30 days' -- Mengambil transaksi dalam 30 hari terakhir
-          GROUP BY DATE(tr.transaction_date)
+          WHERE tr.transaction_date AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta' >= $1 
+          AND tr.transaction_date AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta' <= $2
+          GROUP BY DATE(tr.transaction_date AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Jakarta')
       )
       SELECT 
           ds.date,
@@ -247,7 +267,10 @@ exports.getProductStats = async (req, res) => {
       FROM daily_stats ds
       LEFT JOIN daily_transactions dt ON ds.date = dt.date
       ORDER BY ds.date DESC;
-    `);
+    `, [startDate, endDate]);
+
+    console.log('Number of results:', result.rows.length);
+
     res.json(result.rows);
   } catch (error) {
     console.error("Error in getProductStats:", error);

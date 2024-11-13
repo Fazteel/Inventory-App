@@ -216,6 +216,14 @@ const ProductStatistics = () => {
                 </div>
             </div>
             <div ref={chartRef} className="px-3 py-2 bg-white rounded-xl dark:bg-gray-800" />
+            {/* Last updated info */}
+            <div className="text-xs text-gray-500 text-right px-4 pb-2">
+                Last updated: {new Date().toLocaleTimeString('id-ID', {
+                    timeZone: 'Asia/Jakarta',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}
+            </div>
         </div>
     );
 };
